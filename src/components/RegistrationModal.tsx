@@ -1,0 +1,261 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckCircle, Loader2 } from "lucide-react";
+
+interface RegistrationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) => {
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    gender: "",
+    birthDate: "",
+    cccdNumber: "",
+    phoneInUse: "",
+    iphoneModel: "",
+    location: "",
+    relativePhone: "",
+    employerPhone: "",
+    bankAccount: "",
+    bankName: ""
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNext = () => {
+    if (step < 3) {
+      setStep(step + 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsSubmitting(false);
+    setStep(3);
+  };
+
+  const renderProgressBar = () => (
+    <div className="flex items-center justify-center mb-6">
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+            step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+          }`}>
+            1
+          </div>
+          <div className={`w-8 h-0.5 ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+        </div>
+        <div className="flex items-center">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+            step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+          }`}>
+            2
+          </div>
+          <div className={`w-8 h-0.5 ${step >= 3 ? 'bg-primary' : 'bg-muted'}`} />
+        </div>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+          step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+        }`}>
+          3
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep1 = () => (
+    <div className="space-y-4">
+      <h3 className="text-2xl font-bold text-center mb-2">Chào bạn!</h3>
+      <p className="text-muted-foreground text-center mb-6">
+        Vui lòng điền thông tin cá nhân của bạn một cách cẩn thận, điều này là cần thiết để được 
+        duyệt và cấp cho bạn các điều khoản vay tốt hơn.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="gender">Giới tính</Label>
+          <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn giới tính" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Nam</SelectItem>
+              <SelectItem value="female">Nữ</SelectItem>
+              <SelectItem value="other">Khác</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="birthDate">Ngày tháng năm sinh</Label>
+          <Input 
+            type="date" 
+            value={formData.birthDate}
+            onChange={(e) => handleInputChange('birthDate', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="cccdNumber">Số CCCD</Label>
+          <Input 
+            placeholder="Nhập số CCCD"
+            value={formData.cccdNumber}
+            onChange={(e) => handleInputChange('cccdNumber', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="phoneInUse">Nhãn hiệu điện thoại bạn đang sử dụng</Label>
+          <Select value={formData.phoneInUse} onValueChange={(value) => handleInputChange('phoneInUse', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Vui lòng chọn..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="iphone">iPhone</SelectItem>
+              <SelectItem value="samsung">Samsung</SelectItem>
+              <SelectItem value="oppo">OPPO</SelectItem>
+              <SelectItem value="xiaomi">Xiaomi</SelectItem>
+              <SelectItem value="vivo">Vivo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="iphoneModel">Loại điện thoại iPhone</Label>
+          <Input 
+            placeholder="VD: iPhone 14 Pro Max"
+            value={formData.iphoneModel}
+            onChange={(e) => handleInputChange('iphoneModel', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="location">Vị trí của bạn</Label>
+          <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn tỉnh/thành phố" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="hanoi">Hà Nội</SelectItem>
+              <SelectItem value="hcm">TP. Hồ Chí Minh</SelectItem>
+              <SelectItem value="danang">Đà Nẵng</SelectItem>
+              <SelectItem value="haiphong">Hải Phòng</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Button onClick={handleNext} className="w-full mt-6">
+        Tiếp tục
+      </Button>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold text-center mb-4">Thông tin liên hệ</h3>
+      
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="relativePhone">Số điện thoại người thân</Label>
+          <Input 
+            placeholder="Nhập số điện thoại người thân"
+            value={formData.relativePhone}
+            onChange={(e) => handleInputChange('relativePhone', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="employerPhone">Số điện thoại nhà tuyển dụng/đồng nghiệp</Label>
+          <Input 
+            placeholder="Nhập số điện thoại công ty"
+            value={formData.employerPhone}
+            onChange={(e) => handleInputChange('employerPhone', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="bankAccount">STK Ngân hàng</Label>
+          <Input 
+            placeholder="Nhập số tài khoản ngân hàng"
+            value={formData.bankAccount}
+            onChange={(e) => handleInputChange('bankAccount', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="bankName">Tên Ngân hàng</Label>
+          <Select value={formData.bankName} onValueChange={(value) => handleInputChange('bankName', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn ngân hàng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="vietcombank">Vietcombank</SelectItem>
+              <SelectItem value="techcombank">Techcombank</SelectItem>
+              <SelectItem value="mbbank">MBBank</SelectItem>
+              <SelectItem value="acb">ACB</SelectItem>
+              <SelectItem value="vpbank">VPBank</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Button onClick={handleSubmit} className="w-full mt-6" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Đang xử lý...
+          </>
+        ) : (
+          'Gửi đăng ký'
+        )}
+      </Button>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="text-center py-8">
+      <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+      <h3 className="text-2xl font-bold mb-4 text-success">Thành công!</h3>
+      <p className="text-lg text-muted-foreground mb-2">Hồ sơ đang được xét duyệt</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        Chúng tôi sẽ liên hệ với bạn trong vòng 5-15 phút
+      </p>
+      <Button onClick={onClose} className="bg-success hover:bg-success/90">
+        Hoàn tất
+      </Button>
+    </div>
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">A15</span>
+              </div>
+              <span className="text-xl font-bold text-primary">ALO 15S</span>
+            </div>
+          </div>
+          {renderProgressBar()}
+        </DialogHeader>
+        
+        {step === 1 && renderStep1()}
+        {step === 2 && renderStep2()}
+        {step === 3 && renderStep3()}
+      </DialogContent>
+    </Dialog>
+  );
+};

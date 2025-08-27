@@ -144,7 +144,8 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
 
           <Button 
             onClick={onSubmit}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 text-lg font-semibold rounded-lg shadow-elegant"
+            size="xl"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant"
             disabled={!agreed || !fullName || !phone}
           >
             ĐĂNG KÝ VAY

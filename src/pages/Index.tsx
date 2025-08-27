@@ -1,12 +1,61 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { ALOHeader } from "@/components/ALOHeader";
+import { LoanForm } from "@/components/LoanForm";
+import { StepsSection } from "@/components/StepsSection";
+import { EligibilitySection } from "@/components/EligibilitySection";
+import { LoanTable } from "@/components/LoanTable";
+import { RegistrationModal } from "@/components/RegistrationModal";
 
 const Index = () => {
+  const [showRegistration, setShowRegistration] = useState(false);
+
+  const handleLoanFormSubmit = () => {
+    setShowRegistration(true);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <ALOHeader />
+      
+      <main>
+        {/* Hero Section with Loan Form */}
+        <section className="py-16 px-4">
+          <LoanForm onSubmit={handleLoanFormSubmit} />
+        </section>
+
+        {/* Steps Section */}
+        <StepsSection />
+
+        {/* Eligibility Section */}
+        <EligibilitySection />
+
+        {/* Loan Table Section */}
+        <LoanTable />
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-muted py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">A15</span>
+            </div>
+            <span className="text-xl font-bold text-primary">ALO 15S</span>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            © 2024 ALO 15S - Nền tảng cho vay online uy tín, nhanh chóng, minh bạch
+          </p>
+          <p className="text-muted-foreground text-xs mt-2">
+            Hotline: 0815.320.648 - 0927.996.903
+          </p>
+        </div>
+      </footer>
+
+      {/* Registration Modal */}
+      <RegistrationModal 
+        isOpen={showRegistration} 
+        onClose={() => setShowRegistration(false)} 
+      />
     </div>
   );
 };

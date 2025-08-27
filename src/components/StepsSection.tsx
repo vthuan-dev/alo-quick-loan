@@ -38,7 +38,11 @@ export const StepsSection = () => {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {steps.map((step, index) => (
-            <div key={index} className="bg-card rounded-xl p-6 shadow-card-custom text-center">
+            <div 
+              key={index} 
+              className="bg-card rounded-xl p-6 shadow-card-custom text-center animate-slide-up hover:shadow-elegant transition-all duration-300 hover:-translate-y-1"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 {step.icon}
               </div>
@@ -49,7 +53,7 @@ export const StepsSection = () => {
         </div>
 
         <div className="text-center">
-          <Button className="bg-primary hover:bg-primary/90 px-8 py-3 text-lg">
+          <Button size="xl" className="bg-primary hover:bg-primary/90 shadow-elegant">
             Đăng ký ngay
           </Button>
         </div>
