@@ -67,7 +67,8 @@ export class AuthService {
       };
 
       const accessToken = this.jwtService.sign(payload);
-      const expiresIn = this.configService.get<number>('JWT_EXPIRES_IN_SECONDS') || 86400; // 24 hours
+      // 2 hours = 7200 seconds default if env not provided
+      const expiresIn = this.configService.get<number>('JWT_EXPIRES_IN_SECONDS') || 7200;
 
       this.logger.log(`User ${phoneNumber} logged in successfully`);
 

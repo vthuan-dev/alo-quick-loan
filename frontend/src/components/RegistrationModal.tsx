@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { api, Gender } from "@/lib/api";
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -26,23 +27,52 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
     bankAccount: "",
     bankName: ""
   });
+  const [loanApplicationId, setLoanApplicationId] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('loanApplicationId') : null,
+  );
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleNext = () => {
-    if (step < 3) {
-      setStep(step + 1);
+  const handleNext = async () => {
+    if (step === 1 && loanApplicationId) {
+      // Map FE → BE Step2
+      try {
+        await api.step2({
+          loanApplicationId,
+          gender: (formData.gender === 'male' ? 'MALE' : formData.gender === 'female' ? 'FEMALE' : 'OTHER') as Gender,
+          dob: formData.birthDate,
+          identityNumber: formData.cccdNumber,
+          phoneBrand: formData.phoneInUse || formData.iphoneModel || 'Unknown',
+          location: formData.location,
+        });
+        setStep(2);
+      } catch (e) {
+        alert('Vui lòng kiểm tra lại thông tin bước 1.');
+      }
+      return;
     }
+    if (step < 3) setStep(step + 1);
   };
 
   const handleSubmit = async () => {
+    if (!loanApplicationId) return;
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setStep(3);
+    try {
+      await api.step3({
+        loanApplicationId,
+        relativePhone: formData.relativePhone,
+        companyPhone: formData.employerPhone,
+        bankAccount: formData.bankAccount,
+        bankName: formData.bankName,
+      });
+      setStep(3);
+    } catch (e) {
+      alert('Vui lòng kiểm tra lại thông tin bước 2.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderProgressBar = () => (

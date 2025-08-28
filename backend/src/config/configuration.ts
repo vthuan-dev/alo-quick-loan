@@ -9,7 +9,8 @@ export default () => ({
   },
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    // Default to 2 hours if not specified
+    expiresIn: process.env.JWT_EXPIRES_IN || '2h',
   },
   swagger: {
     enabled: process.env.SWAGGER_ENABLED === 'true',

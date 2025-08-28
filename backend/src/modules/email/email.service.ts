@@ -2,11 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter: Transporter;
+  private simulateInDevelopment: boolean = false;
 
   constructor(private configService: ConfigService) {
     this.initializeTransporter();
@@ -15,21 +17,35 @@ export class EmailService {
   private initializeTransporter() {
     const emailUser = this.configService.get<string>('EMAIL_USER');
     const emailPass = this.configService.get<string>('EMAIL_PASS');
+    const isDevelopment = this.configService.get('NODE_ENV') === 'development';
+    const simulateEnv = this.configService.get<string>('EMAIL_SIMULATE');
+    // EMAIL_SIMULATE env can force simulation in dev or disable it
+    // default: true in development, false otherwise
+    this.simulateInDevelopment = simulateEnv
+      ? simulateEnv.toLowerCase() === 'true'
+      : isDevelopment;
+    this.logger.log(
+      `Email mode: simulate=${this.simulateInDevelopment} (NODE_ENV=${this.configService.get('NODE_ENV')})`,
+    );
     
     // Skip email setup if credentials are not provided in development
     if (!emailUser || emailUser === 'your-email@gmail.com') {
       this.logger.warn('Email credentials not configured. Email sending will be simulated in development mode.');
+      // keep simulate flag as determined above
       return;
     }
     
-    const emailConfig = {
+    const emailConfig: SMTPTransport.Options = {
       host: this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com'),
       port: this.configService.get<number>('EMAIL_PORT', 587),
-      secure: this.configService.get<boolean>('EMAIL_SECURE', false),
+      secure: this.configService.get<boolean>('EMAIL_SECURE', false), // false for TLS
       auth: {
         user: emailUser,
         pass: emailPass,
       },
+      tls: {
+        rejectUnauthorized: false // Allow self-signed certificates
+      }
     };
 
     this.transporter = nodemailer.createTransport(emailConfig);
@@ -42,6 +58,12 @@ export class EmailService {
         if (error.message.includes('AUTH') || error.message.includes('credentials')) {
           this.logger.error('Authentication failed. Check your email credentials.');
           this.logger.error('For Gmail, make sure you are using an App Password, not your regular password.');
+        }
+        // In development, simulate sending instead of failing hard
+        if (this.simulateInDevelopment) {
+          this.logger.warn('Falling back to simulated email sending in development due to verification failure.');
+          this.simulateInDevelopment = true;
+          this.transporter = undefined as unknown as Transporter;
         }
       } else {
         this.logger.log('Email transporter is ready to send messages');
@@ -58,7 +80,7 @@ export class EmailService {
     }
     
     // If no transporter is configured, simulate email sending in development
-    if (!this.transporter) {
+    if (!this.transporter || this.simulateInDevelopment) {
       if (this.configService.get('NODE_ENV') === 'development') {
         this.logger.warn(`Email not actually sent (no credentials configured)`);
         this.logger.warn(`In production, configure EMAIL_USER and EMAIL_PASS in .env`);
@@ -68,8 +90,9 @@ export class EmailService {
     }
     
     try {
+      const fromEmail = this.configService.get<string>('EMAIL_USER');
       const mailOptions = {
-        from: `"ALO Quick Loan" <${this.configService.get<string>('EMAIL_FROM') || this.configService.get<string>('EMAIL_USER')}>`,
+        from: `"ALO Quick Loan" <${fromEmail}>`,
         to: email,
         subject: 'Your OTP Code - ALO Quick Loan',
         html: this.getOtpEmailTemplate(otp, phoneNumber),
@@ -84,6 +107,11 @@ export class EmailService {
       return true;
     } catch (error) {
       this.logger.error(`Failed to send OTP email to ${email}:`, error);
+      // In development, do not fail the flow if email provider has issues
+      if (this.configService.get('NODE_ENV') === 'development') {
+        this.logger.warn('Simulating success in development despite email send failure.');
+        return true;
+      }
       return false;
     }
   }

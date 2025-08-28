@@ -7,7 +7,7 @@ import { Otp, OtpDocument } from './schemas/otp.schema';
 @Injectable()
 export class OtpService {
   private readonly logger = new Logger(OtpService.name);
-  private readonly OTP_EXPIRY_MINUTES = 5;
+  private readonly OTP_EXPIRY_MINUTES = 1;
   private readonly MAX_ATTEMPTS = 3;
   private readonly RESEND_DELAY_SECONDS = 60;
 
