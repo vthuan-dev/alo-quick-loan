@@ -1,7 +1,30 @@
-import { useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { ToastProps } from '@/components/ui/toast';
 
+interface ToastContextType {
+  toasts: ToastProps[];
+  showSuccess: (title: string, message: string, duration?: number) => void;
+  showError: (title: string, message: string, duration?: number) => void;
+  showWarning: (title: string, message: string, duration?: number) => void;
+  showInfo: (title: string, message: string, duration?: number) => void;
+  dismiss: (id: string) => void;
+}
+
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
 export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+  return context;
+};
+
+interface ToastProviderProps {
+  children: ReactNode;
+}
+
+export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastProps[]>([]);
 
   const toast = useCallback((props: Omit<ToastProps, 'id' | 'onClose'>) => {
@@ -46,13 +69,18 @@ export const useToast = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  return { 
-    toasts, 
-    dismiss, 
-    toast,
+  const value: ToastContextType = {
+    toasts,
     showSuccess,
     showError,
     showWarning,
-    showInfo
+    showInfo,
+    dismiss
   };
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+    </ToastContext.Provider>
+  );
 };

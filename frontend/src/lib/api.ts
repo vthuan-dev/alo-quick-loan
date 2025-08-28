@@ -13,6 +13,14 @@ export interface Step1Response {
   dailyPayment: number;
 }
 
+export interface CheckExistingResponse {
+  exists: boolean;
+  canContinue: boolean;
+  message?: string;
+  currentStep?: number;
+  loanApplicationId?: string;
+}
+
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export interface Step2Request {
@@ -47,18 +55,37 @@ async function http<T>(path: string, options: RequestInit): Promise<T> {
 }
 
 export const api = {
+  async checkExistingApplication(phoneNumber: string): Promise<CheckExistingResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/loan/check-existing`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ phoneNumber }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to check existing application');
+    }
+
+    return response.json();
+  },
+
   step1(payload: Step1Request) {
     return http<Step1Response>('/api/loan/step1', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
+
   step2(payload: Step2Request) {
     return http<{ message: string }>('/api/loan/step2', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
+
   step3(payload: Step3Request) {
     return http<{ message: string }>('/api/loan/step3', {
       method: 'POST',

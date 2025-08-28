@@ -219,11 +219,60 @@ export class LoanService {
   async findApplicationByIdAndPhone(
     loanApplicationId: string,
     phoneNumber: string,
-  ): Promise<LoanApplication | null> {
-    return this.loanModel.findOne({
+  ): Promise<LoanApplication> {
+    const application = await this.loanModel.findOne({
       loanApplicationId,
       phoneNumber,
     });
+
+    if (!application) {
+      throw new NotFoundException('Loan application not found');
+    }
+
+    return application;
+  }
+
+  async checkExistingApplication(phoneNumber: string): Promise<{
+    exists: boolean;
+    application?: LoanApplication;
+    canContinue: boolean;
+    message?: string;
+  }> {
+    const application = await this.loanModel.findOne({
+      phoneNumber,
+      status: { $nin: ['REJECTED', 'CANCELLED'] }, // Exclude rejected/cancelled
+    }).sort({ createdAt: -1 }); // Get most recent
+
+    if (!application) {
+      return { exists: false, canContinue: false };
+    }
+
+    // Check if application is completed and pending approval
+    if (application.isCompleted && application.status === 'PENDING') {
+      return {
+        exists: true,
+        application,
+        canContinue: false,
+        message: 'Quý khách đang có hồ sơ đang chờ xét duyệt, vui lòng thử lại sau'
+      };
+    }
+
+    // Check if application can continue (not completed)
+    if (!application.isCompleted) {
+      return {
+        exists: true,
+        application,
+        canContinue: true,
+        message: `Tiếp tục hồ sơ ở bước ${application.currentStep}`
+      };
+    }
+
+    return {
+      exists: true,
+      application,
+      canContinue: false,
+      message: 'Hồ sơ đã hoàn thành'
+    };
   }
 
   async getClientSummary(phoneNumber: string) {

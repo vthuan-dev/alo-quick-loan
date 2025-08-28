@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { api, Gender } from "@/lib/api";
+import React from "react";
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -31,6 +32,19 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
     typeof window !== 'undefined' ? localStorage.getItem('loanApplicationId') : null,
   );
 
+  // Kiểm tra step hiện tại từ localStorage khi modal mở
+  React.useEffect(() => {
+    if (isOpen && loanApplicationId) {
+      const existingStep = localStorage.getItem('existingApplicationStep');
+      if (existingStep) {
+        const stepNumber = parseInt(existingStep);
+        if (stepNumber > 1 && stepNumber <= 3) {
+          setStep(stepNumber);
+        }
+      }
+    }
+  }, [isOpen, loanApplicationId]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -48,6 +62,8 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
           location: formData.location,
         });
         setStep(2);
+        // Cập nhật step trong localStorage
+        localStorage.setItem('existingApplicationStep', '2');
       } catch (e) {
         alert('Vui lòng kiểm tra lại thông tin bước 1.');
       }
@@ -68,6 +84,8 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         bankName: formData.bankName,
       });
       setStep(3);
+      // Cập nhật step trong localStorage
+      localStorage.setItem('existingApplicationStep', '3');
     } catch (e) {
       alert('Vui lòng kiểm tra lại thông tin bước 2.');
     } finally {

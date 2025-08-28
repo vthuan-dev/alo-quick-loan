@@ -92,6 +92,26 @@ export class LoanController {
     };
   }
 
+  @Post('check-existing')
+  @ApiOperation({ summary: 'Check if user has existing loan application' })
+  @ApiResponse({
+    status: 200,
+    description: 'Application status check result',
+    schema: {
+      type: 'object',
+      properties: {
+        exists: { type: 'boolean' },
+        canContinue: { type: 'boolean' },
+        message: { type: 'string' },
+        currentStep: { type: 'number' },
+        loanApplicationId: { type: 'string' }
+      }
+    }
+  })
+  async checkExistingApplication(@Body() dto: { phoneNumber: string }) {
+    return this.loanService.checkExistingApplication(dto.phoneNumber);
+  }
+
   @Post('step1')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Step 1: Enter basic information' })
