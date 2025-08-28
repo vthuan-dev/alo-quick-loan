@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Phone Auth - Local Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            border: 1px solid #1976d2;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background-color: #fff3e0;
+            border: 1px solid #f57c00;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .test-numbers {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background-color: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Phone Auth - Setup Instructions</h1>
+    
+    <div class="warning-box">
+        <strong>⚠️ reCAPTCHA Issue:</strong> Firebase Phone Auth requires reCAPTCHA which doesn't work well with local file:// URLs.
+    </div>
+
+    <h2>Solution: Use Test Phone Numbers</h2>
+    
+    <div class="info-box">
+        <strong>Step 1:</strong> Add these test numbers in Firebase Console
+    </div>
+    
+    <div class="test-numbers">
+        <h3>Recommended Test Numbers:</h3>
+        <ul>
+            <li>Phone: <code>+840706871283</code> → Code: <code>123456</code></li>
+            <li>Phone: <code>+84123456789</code> → Code: <code>123456</code></li>
+            <li>Phone: <code>+84987654321</code> → Code: <code>654321</code></li>
+        </ul>
+    </div>
+
+    <h2>How to Add Test Numbers:</h2>
+    <ol>
+        <li>Go to Firebase Console → <strong>Authentication</strong></li>
+        <li>Click <strong>Sign-in method</strong> tab</li>
+        <li>Click on <strong>Phone</strong></li>
+        <li>Scroll down to <strong>"Phone numbers for testing (optional)"</strong></li>
+        <li>Add the test numbers above</li>
+        <li>Click <strong>Save</strong></li>
+    </ol>
+
+    <h2>Testing Options:</h2>
+    
+    <div class="info-box">
+        <h3>Option 1: Use the Updated Test Page</h3>
+        <p>Open <a href="firebase-test.html">firebase-test.html</a> and use one of the test numbers.</p>
+    </div>
+
+    <div class="info-box">
+        <h3>Option 2: Host Locally with HTTP Server</h3>
+        <pre>npx http-server -p 8081</pre>
+        <p>Then open: <a href="http://localhost:8081/firebase-test.html">http://localhost:8081/firebase-test.html</a></p>
+    </div>
+
+    <div class="info-box">
+        <h3>Option 3: Deploy to Firebase Hosting</h3>
+        <p>For production testing, deploy your app to Firebase Hosting where reCAPTCHA works properly.</p>
+    </div>
+
+    <h2>Backend Status Check:</h2>
+    <button onclick="checkBackend()">Check Backend Connection</button>
+    <div id="backend-status" style="margin-top: 10px;"></div>
+
+    <script>
+        async function checkBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            statusDiv.innerHTML = 'Checking...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api-docs');
+                if (response.ok) {
+                    statusDiv.innerHTML = '✅ Backend is running at http://localhost:3000';
+                } else {
+                    statusDiv.innerHTML = '❌ Backend returned status: ' + response.status;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Backend is not running. Start it with: npm run start:dev';
+            }
+        }
+    </script>
+
+    <h2>Test Phone Auth Flow:</h2>
+    <div class="test-numbers">
+        <strong>With test numbers, the flow is:</strong>
+        <ol>
+            <li>Enter test phone number (e.g., <code>+840706871283</code>)</li>
+            <li>reCAPTCHA will auto-complete (no challenge shown)</li>
+            <li>No SMS will be sent</li>
+            <li>Enter the test code (e.g., <code>123456</code>)</li>
+            <li>Authentication completes successfully</li>
+        </ol>
+    </div>
+
+    <div class="warning-box">
+        <strong>Important:</strong> Test numbers only work in development. For production, you'll need:
+        <ul>
+            <li>A properly hosted domain (not file://)</li>
+            <li>Domain added to Firebase authorized domains</li>
+            <li>Real phone numbers for SMS delivery</li>
+        </ul>
+    </div>
+</body>
+</html>

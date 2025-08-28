@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Authentication Test - ALO Quick Loan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .hidden {
+            display: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .otp-info {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 OTP Authentication Test</h1>
+        
+        <!-- Step 1: Phone Number Input -->
+        <div id="step1" class="step">
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number (Vietnamese format)</label>
+                <input type="tel" id="phoneNumber" placeholder="0912345678" value="">
+            </div>
+            <button id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
+        </div>
+
+        <!-- Step 2: OTP Verification -->
+        <div id="step2" class="step hidden">
+            <div class="form-group">
+                <label for="otpCode">Enter OTP Code</label>
+                <input type="text" id="otpCode" placeholder="Enter 4-digit code" maxlength="4">
+            </div>
+            <div class="otp-info" id="otpInfo"></div>
+            <button onclick="verifyOtp()">Verify OTP</button>
+            <button onclick="resetForm()" style="background-color: #888;">Back</button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status" class="status hidden"></div>
+
+        <!-- Result Display -->
+        <div id="result" class="result hidden">
+            <strong>Authentication Result:</strong>
+            <pre id="resultData"></pre>
+        </div>
+
+        <!-- Test API Buttons -->
+        <div id="apiTests" class="hidden">
+            <h3>Test Authenticated Endpoints:</h3>
+            <button onclick="testApi('/api/client/loans/summary')">Get Loan Summary</button>
+            <button onclick="testApi('/api/client/loans/my-applications')">Get My Applications</button>
+            <button onclick="logout()" style="background-color: #f44336;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.classList.remove('hidden');
+        }
+
+        function showResult(data) {
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('resultData').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function sendOtp() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            
+            if (!phoneNumber || !phoneNumber.match(/^0[0-9]{9,10}$/)) {
+                showStatus('Please enter a valid Vietnamese phone number (e.g., 0912345678)', 'error');
+                return;
+            }
+
+            document.getElementById('sendOtpBtn').disabled = true;
+            showStatus('Sending OTP...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/send-otp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phoneNumber })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to send OTP');
+                }
+
+                showStatus(data.message || 'OTP sent successfully!', 'success');
+                
+                // Show OTP input
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('otpCode').focus();
+
+                // For development, show the OTP in console (remove in production!)
+                showStatus('OTP sent! Check console for development OTP.', 'warning');
+                document.getElementById('otpInfo').innerHTML = 
+                    `<strong>💡 Development Mode:</strong><br>` +
+                    `Check your backend console for the OTP code.<br>` +
+                    `It will be a 4-digit number logged as:<br>` +
+                    `<code>[SmsService] OTP for ${phoneNumber}: XXXX</code>`;
+                
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                showStatus(error.message, 'error');
+                document.getElementById('sendOtpBtn').disabled = false;
+            }
+        }
+
+        async function verifyOtp() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const otp = document.getElementById('otpCode').value;
+            
+            if (!otp || otp.length !== 4) {
+                showStatus('Please enter a 4-digit OTP code', 'error');
+                return;
+            }
+
+            showStatus('Verifying OTP...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phoneNumber, otp })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to verify OTP');
+                }
+
+                // Store tokens
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('phoneNumber', data.phoneNumber);
+                
+                showStatus('Authentication successful!', 'success');
+                showResult({
+                    accessToken: data.accessToken,
+                    phoneNumber: data.phoneNumber,
+                    expiresIn: data.expiresIn
+                });
+                
+                // Show API test buttons
+                document.getElementById('apiTests').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error verifying OTP:', error);
+                showStatus(error.message, 'error');
+            }
+        }
+
+        async function testApi(endpoint) {
+            const token = localStorage.getItem('accessToken');
+            
+            if (!token) {
+                showStatus('No authentication token found. Please login first.', 'error');
+                return;
+            }
+
+            try {
+                showStatus(`Testing ${endpoint}...`, 'info');
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'API call failed');
+                }
+
+                showStatus('API call successful!', 'success');
+                showResult({ 
+                    endpoint: endpoint,
+                    response: data 
+                });
+                
+            } catch (error) {
+                showStatus('API call failed: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('phoneNumber');
+            showStatus('Logged out successfully', 'info');
+            resetForm();
+            document.getElementById('apiTests').classList.add('hidden');
+        }
+
+        function resetForm() {
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('otpCode').value = '';
+            document.getElementById('sendOtpBtn').disabled = false;
+            document.getElementById('status').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+        }
+
+        // Check backend status on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api-docs`);
+                if (response.ok) {
+                    console.log('✅ Backend is running at', API_BASE);
+                } else {
+                    showStatus('Backend is not responding properly', 'warning');
+                }
+            } catch (error) {
+                showStatus('Backend is not running. Please start it with: npm run start:dev', 'error');
+            }
+
+            // Check if already authenticated
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                document.getElementById('apiTests').classList.remove('hidden');
+                showStatus('You are already authenticated. You can test the API.', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
