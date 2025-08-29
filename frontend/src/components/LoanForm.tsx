@@ -392,7 +392,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                 Bằng việc chọn ở đây, tôi xác nhận rằng tôi đã đọc và hiểu đầy đủ các{" "}
                 <a href="/terms" className="text-primary underline">điều khoản</a>, {" "}
                 <a href="/conditions" className="text-primary underline">điều kiện</a> và đồng ý với{" "}
-                <a href="/privacy" className="text-primary underline">Chính sách quyền riêng tư</a> được đưa ra bởi ALO 15S.
+                <a href="/privacy" className="text-primary underline">Chính sách quyền riêng tư</a> được đưa ra bởi 15S.
               </label>
             </div>
           </div>
