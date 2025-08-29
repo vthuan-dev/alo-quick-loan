@@ -1,5 +1,6 @@
-  import { useState } from "react";
-import { api } from "@/lib/api";
+  import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api, LoanApplication } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/contexts/ToastContext";
+import { useAuthContext } from "@/App";
 
 interface LoanFormProps {
   onSubmit: () => void;
@@ -20,6 +22,36 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
   const [agreed, setAgreed] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const { showError, showSuccess, showInfo } = useToast();
+  const { isAuthenticated } = useAuthContext();
+  const navigate = useNavigate();
+
+  const [canRepeatLoan, setCanRepeatLoan] = useState(false);
+  const [prefillName, setPrefillName] = useState("");
+  const [prefillPhone, setPrefillPhone] = useState("");
+
+  useEffect(() => {
+    const checkLast = async () => {
+      try {
+        if (!isAuthenticated) return;
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+        const resp = await api.getMyLoanApplications(token, { page: 1, limit: 5 });
+        const apps: LoanApplication[] = resp.data || [];
+        if (!apps.length) return;
+        const latest = apps
+          .slice()
+          .sort((a: any, b: any) => new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime())[0];
+        if (latest && latest.status === 'COMPLETED') {
+          setCanRepeatLoan(true);
+          setPrefillName(latest.fullName || "");
+          setPrefillPhone(latest.phoneNumber || "");
+          setFullName(latest.fullName || "");
+          setPhone(latest.phoneNumber || "");
+        }
+      } catch {}
+    };
+    checkLast();
+  }, [isAuthenticated]);
 
   // Bảng tỷ lệ thanh toán hàng ngày theo dữ liệu backend
   const PAYMENT_RATES = {
@@ -132,7 +164,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
   const handleSubmit = async () => {
     console.log('🚀 handleSubmit called');
     
-    if (!agreed || !fullName || !phone) {
+    if (!agreed || (!canRepeatLoan && (!fullName || !phone))) {
       console.log('❌ Validation failed, showing error toast');
       showError(
         "Thông tin không đầy đủ", 
@@ -143,12 +175,14 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
 
     setIsChecking(true);
     try {
-      console.log('🔍 Checking existing application for phone:', phone);
+      const usedPhone = canRepeatLoan ? prefillPhone : phone;
+      const usedName = canRepeatLoan ? prefillName : fullName;
+      console.log('🔍 Checking existing application for phone:', usedPhone);
       // Kiểm tra hồ sơ tồn tại
-      const existingCheck = await api.checkExistingApplication(phone.replace(/\s+/g, ''));
+      const existingCheck = await api.checkExistingApplication(usedPhone.replace(/\s+/g, ''));
       console.log('📋 Existing check result:', existingCheck);
       
-      if (existingCheck.exists) {
+      if (!canRepeatLoan && existingCheck.exists) {
         if (!existingCheck.canContinue) {
           // Hồ sơ đã hoàn thành hoặc không thể tiếp tục
           console.log('⚠️ Application cannot continue:', existingCheck.message);
@@ -157,13 +191,15 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
           if (existingCheck.currentStep === 3) {
             showInfo(
               "Hồ sơ đã hoàn thành",
-              existingCheck.message || "Hồ sơ của bạn đã hoàn thành và đang chờ xét duyệt, vui lòng thử lại sau"
+              (existingCheck.message || "Hồ sơ của bạn đã hoàn thành.") + " Vui lòng đăng nhập để theo dõi và quản lý hồ sơ."
             );
+            setTimeout(() => navigate('/login'), 1200);
           } else {
             showInfo(
-              "Hồ sơ không thể tiếp tục",
-              existingCheck.message || "Hồ sơ của bạn không thể tiếp tục, vui lòng liên hệ hỗ trợ"
+              "Hồ sơ đã tồn tại",
+              (existingCheck.message || "Bạn đã có hồ sơ trong hệ thống.") + " Vui lòng đăng nhập để tiếp tục hoặc theo dõi trạng thái."
             );
+            setTimeout(() => navigate('/login'), 1200);
           }
           
           setIsChecking(false);
@@ -192,8 +228,8 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
       // Không có hồ sơ tồn tại - tạo mới
       console.log('🆕 Creating new application');
       const payload = {
-        fullName,
-        phoneNumber: phone.replace(/\s+/g, ''),
+        fullName: usedName,
+        phoneNumber: usedPhone.replace(/\s+/g, ''),
         loanAmount: loanAmount[0],
         loanTerm: loanTerm,
       };
@@ -316,8 +352,9 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                   id="fullName"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1 relative z-10 pointer-events-auto text-black placeholder:text-gray-500"
+                  className={`mt-1 relative z-10 pointer-events-auto text-black placeholder:text-gray-500 ${canRepeatLoan ? 'bg-gray-100' : ''}`}
                   placeholder="Nhập họ và tên của bạn"
+                  disabled={canRepeatLoan}
                 />
               </div>
 
@@ -328,8 +365,9 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="mt-1 relative z-10 pointer-events-auto text-black placeholder:text-gray-500"
+                  className={`mt-1 relative z-10 pointer-events-auto text-black placeholder:text-gray-500 ${canRepeatLoan ? 'bg-gray-100' : ''}`}
                   placeholder="Nhập số điện thoại"
+                  disabled={canRepeatLoan}
                 />
               </div>
             </div>

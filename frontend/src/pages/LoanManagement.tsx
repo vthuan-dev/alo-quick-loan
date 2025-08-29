@@ -76,6 +76,8 @@ export const LoanManagement = () => {
     switch (status) {
       case 'PENDING':
         return { label: 'Chờ xét duyệt', color: 'bg-yellow-500', icon: Clock };
+      case 'CONTACTED':
+        return { label: 'Đã liên hệ', color: 'bg-blue-500', icon: TrendingUp };
       case 'APPROVED':
         return { label: 'Đã phê duyệt', color: 'bg-green-500', icon: CheckCircle };
       case 'IN_PROGRESS':
@@ -84,6 +86,8 @@ export const LoanManagement = () => {
         return { label: 'Hoàn thành', color: 'bg-green-600', icon: CheckCircle };
       case 'REJECTED':
         return { label: 'Từ chối', color: 'bg-red-500', icon: AlertCircle };
+      case 'CANCELLED':
+        return { label: 'Đã hủy', color: 'bg-gray-500', icon: AlertCircle };
       default:
         return { label: 'Không xác định', color: 'bg-gray-500', icon: AlertCircle };
     }
@@ -127,6 +131,10 @@ export const LoanManagement = () => {
   if (!isAuthenticated) {
     return null;
   }
+
+  const processingLoans = loanApplications.filter((l) => l.status !== 'APPROVED' && l.status !== 'COMPLETED');
+  const approvedLoans = loanApplications.filter((l) => l.status === 'APPROVED');
+  const completedLoans = loanApplications.filter((l) => l.status === 'COMPLETED');
 
   return (
     <div className="min-h-screen bg-background">
@@ -349,112 +357,158 @@ export const LoanManagement = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {loanApplications.map((loan, index) => {
-                const statusInfo = getStatusInfo(loan.status);
-                const StatusIcon = statusInfo.icon;
-                
-                return (
-                  <Card 
-                    key={loan.loanApplicationId} 
-                    className="group relative overflow-hidden bg-gradient-to-br from-background to-primary/5 border border-primary/20 hover:border-primary/40 hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in slide-in-from-bottom-4 duration-700"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <CardHeader className="relative z-10">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-primary/20 rounded-lg">
-                            <DollarSign className="w-5 h-5 text-primary" />
-                          </div>
-                          <CardTitle className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                            Khoản vay #{loan.loanApplicationId}
-                          </CardTitle>
-                        </div>
-                        <Badge className={`${statusInfo.color} text-white shadow-lg backdrop-blur-sm`}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {statusInfo.label}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-muted-foreground flex items-center space-x-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>Tạo ngày {loan.createdAt ? formatDate(loan.createdAt.toString()) : 'N/A'}</span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 relative z-10">
-                      {/* Loan Amount */}
-                      <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-primary/20 rounded-lg group-hover/item:bg-primary/30 transition-colors">
-                            <DollarSign className="w-5 h-5 text-primary" />
-                          </div>
-                          <span className="font-semibold text-foreground">Số tiền vay:</span>
-                        </div>
-                        <span className="font-bold text-xl text-primary">
-                          {formatCurrency(loan.loanAmount || 0)}
-                        </span>
-                      </div>
-
-                      {/* Loan Term */}
-                      <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-blue-500/10 to-blue-500/5 rounded-xl border border-blue-200/30 hover:border-blue-300/50 transition-all duration-300 hover:scale-105">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-500/20 rounded-lg group-hover/item:bg-blue-500/30 transition-colors">
-                            <Calendar className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <span className="font-semibold text-foreground">Kỳ hạn:</span>
-                        </div>
-                        <span className="font-bold text-xl text-blue-600">
-                          {loan.loanTerm || 0} ngày
-                        </span>
-                      </div>
-
-                      {/* Daily Payment */}
-                      <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-green-500/5 rounded-xl border border-green-200/30 hover:border-green-300/50 transition-all duration-300 hover:scale-105">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-green-500/20 rounded-lg group-hover/item:bg-green-500/30 transition-colors">
-                            <TrendingUp className="w-5 h-5 text-green-600" />
-                          </div>
-                          <span className="font-semibold text-foreground">Trả hàng ngày:</span>
-                        </div>
-                        <span className="font-bold text-xl text-green-600">
-                          {formatCurrency(loan.dailyPayment || 0)}
-                        </span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      {!loan.isCompleted && (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Tiến độ hoàn thiện hồ sơ</span>
-                            <span className="font-medium">{loan.currentStep}/3</span>
-                          </div>
-                          <Progress value={(loan.currentStep / 3) * 100} className="h-2" />
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex items-center space-x-3 pt-4">
-                        <Button
-                          onClick={() => handleViewDetails(loan)}
-                          variant="outline"
-                          className="flex-1 border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 backdrop-blur-sm bg-white/50 shadow-lg hover:shadow-xl"
+            <div className="space-y-10">
+              {/* Đang chờ xử lý */}
+              {processingLoans.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                    <h3 className="font-semibold text-yellow-700">Đang chờ xử lý</h3>
+                    <span className="text-sm text-yellow-700">{processingLoans.length} hồ sơ</span>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {processingLoans.map((loan, index) => {
+                      const statusInfo = getStatusInfo(loan.status);
+                      const StatusIcon = statusInfo.icon;
+                      return (
+                        <Card 
+                          key={loan.loanApplicationId} 
+                          className="group relative overflow-hidden bg-gradient-to-br from-background to-primary/5 border border-primary/20 hover:border-primary/40 hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in slide-in-from-bottom-4 duration-700"
+                          style={{ animationDelay: `${index * 100}ms` }}
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Xem chi tiết
-                        </Button>
-                        {loan.status === 'APPROVED' && (
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-green-500/30 text-green-600 hover:bg-green-500 hover:text-white transition-all duration-300 hover:scale-105 backdrop-blur-sm bg-white/50 shadow-lg hover:shadow-xl"
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Tải hợp đồng
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                          <CardHeader className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-primary/20 rounded-lg">
+                                  <DollarSign className="w-5 h-5 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                                  Khoản vay #{loan.loanApplicationId}
+                                </CardTitle>
+                              </div>
+                              <Badge className={`${statusInfo.color} text-white shadow-lg backdrop-blur-sm`}>
+                                <StatusIcon className="w-3 h-3 mr-1" />
+                                {statusInfo.label}
+                              </Badge>
+                            </div>
+                            <CardDescription className="text-muted-foreground flex items-center space-x-2">
+                              <Calendar className="w-4 h-4" />
+                              <span>Tạo ngày {loan.createdAt ? formatDate(loan.createdAt.toString()) : 'N/A'}</span>
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4 relative z-10">
+                            <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-primary/20 rounded-lg group-hover/item:bg-primary/30 transition-colors">
+                                  <DollarSign className="w-5 h-5 text-primary" />
+                                </div>
+                                <span className="font-semibold text-foreground">Số tiền vay:</span>
+                              </div>
+                              <span className="font-bold text-xl text-primary">
+                                {formatCurrency(loan.loanAmount || 0)}
+                              </span>
+                            </div>
+                            <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-blue-500/10 to-blue-500/5 rounded-xl border border-blue-200/30 hover:border-blue-300/50 transition-all duration-300 hover:scale-105">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-blue-500/20 rounded-lg group-hover/item:bg-blue-500/30 transition-colors">
+                                  <Calendar className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <span className="font-semibold text-foreground">Kỳ hạn:</span>
+                              </div>
+                              <span className="font-bold text-xl text-blue-600">
+                                {loan.loanTerm || 0} ngày
+                              </span>
+                            </div>
+                            <div className="group/item flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-green-500/5 rounded-xl border border-green-200/30 hover:border-green-300/50 transition-all duration-300 hover:scale-105">
+                              <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-green-500/20 rounded-lg group-hover/item:bg-green-500/30 transition-colors">
+                                  <TrendingUp className="w-5 h-5 text-green-600" />
+                                </div>
+                                <span className="font-semibold text-foreground">Trả hàng ngày:</span>
+                              </div>
+                              <span className="font-bold text-xl text-green-600">
+                                {formatCurrency(loan.dailyPayment || 0)}
+                              </span>
+                            </div>
+                            {!loan.isCompleted && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-muted-foreground">Tiến độ hoàn thiện hồ sơ</span>
+                                  <span className="font-medium">{loan.currentStep}/3</span>
+                                </div>
+                                <Progress value={(loan.currentStep / 3) * 100} className="h-2" />
+                              </div>
+                            )}
+                            <div className="flex items-center space-x-3 pt-4">
+                              <Button onClick={() => handleViewDetails(loan)} variant="outline" className="flex-1 border-primary/30 text-primary hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 backdrop-blur-sm bg-white/50 shadow-lg hover:shadow-xl">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Xem chi tiết
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Đã phê duyệt */}
+              {approvedLoans.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                    <h3 className="font-semibold text-green-700">Đã phê duyệt</h3>
+                    <span className="text-sm text-green-700">{approvedLoans.length} hồ sơ</span>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {approvedLoans.map((loan) => {
+                      const statusInfo = getStatusInfo(loan.status);
+                      const StatusIcon = statusInfo.icon;
+                      return (
+                        <Card key={loan.loanApplicationId} className="border-green-200">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle>Khoản vay #{loan.loanApplicationId}</CardTitle>
+                              <Badge className={`${statusInfo.color} text-white`}>
+                                <StatusIcon className="w-3 h-3 mr-1" />{statusInfo.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="flex items-center justify-between">
+                            <div className="text-sm text-muted-foreground">Số tiền: <span className="font-semibold text-foreground">{formatCurrency(loan.loanAmount || 0)}</span></div>
+                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(loan)}><Eye className="w-4 h-4 mr-2"/>Xem</Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Đã hoàn thành */}
+              {completedLoans.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <h3 className="font-semibold text-gray-700">Đã hoàn thành</h3>
+                    <span className="text-sm text-gray-700">{completedLoans.length} hồ sơ</span>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {completedLoans.map((loan) => (
+                      <Card key={loan.loanApplicationId} className="border-gray-200">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle>Khoản vay #{loan.loanApplicationId}</CardTitle>
+                            <Badge className="bg-gray-500 text-white">Hoàn thành</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground">Số tiền: <span className="font-semibold text-foreground">{formatCurrency(loan.loanAmount || 0)}</span></div>
+                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(loan)}><Eye className="w-4 h-4 mr-2"/>Xem</Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

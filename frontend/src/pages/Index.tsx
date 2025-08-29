@@ -37,10 +37,9 @@ const Index = () => {
       <footer className="bg-muted py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">A15</span>
-            </div>
-            <span className="text-xl font-bold text-primary">ALO 15S</span>
+            <h1 className="text-8xl font-bold">
+              <span className="text-red-500">15</span><span className="text-green-700">S</span>
+            </h1>
           </div>
           <p className="text-muted-foreground text-sm">
             © 2024 ALO 15S - Nền tảng cho vay online uy tín, nhanh chóng, minh bạch

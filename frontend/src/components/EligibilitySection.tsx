@@ -28,12 +28,11 @@ export const EligibilitySection = () => {
             Ai có thể vay tiền?
           </h2>
           <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-            Là một trong những nền tảng cho vay tiền online uy tín nhất tại Việt Nam, 
-            <span className="text-primary font-semibold"> ALO 15S </span>
-            cung cấp dịch vụ cho đa dạng khách hàng với 
-            <span className="text-primary font-semibold"> quy trình thủ tục đơn giản</span>. 
-            Tại ALO 15S, chúng tôi mong muốn đem lại giải pháp tài chính thông minh, hiện đại, 
-            phục vụ các nhu cầu vay tiền nhanh và đa dạng của khách hàng.
+            Là một trong những nền tảng cho vay tiền qua iphone uy tín nhất Việt Nam, 
+            <span className="text-primary font-semibold"> 15S </span>
+            cung cấp dịch vụ cho đa dạng khách hàng với quy trình thủ tục đơn giản. 
+            Tại <span className="text-primary font-semibold">15S</span>, chúng tôi mong muốn đem lại giải pháp tài chính thông minh, hiện đại, 
+            phục vụ các nhu cầu vay tiền nhanh và đa dạng của khách hàng
           </p>
         </div>
 

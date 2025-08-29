@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuthContext } from '@/App';
+import { api } from '@/lib/api';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 
 export const AdminLogin = () => {
@@ -28,25 +29,24 @@ export const AdminLogin = () => {
     try {
       setIsLoading(true);
       
-      // In production, call actual admin login API
-      // const response = await api.adminLogin({ username, password });
+      // Call real admin login API
+      const response = await api.adminLogin({ username, password });
       
-      // Mock admin login for now
-      const mockAdminUser = {
-        id: 'admin_1',
-        username: username,
-        fullName: 'Admin User',
-        email: 'admin@15s.com',
-        role: 'ADMIN',
-        permissions: ['loan:read', 'loan:write', 'customer:read', 'admin:read'],
-        accessToken: 'mock_admin_token'
+      const adminUser = {
+        id: response.admin.id,
+        username: response.admin.username,
+        fullName: response.admin.fullName,
+        email: response.admin.email,
+        role: response.admin.role,
+        permissions: response.admin.permissions,
+        accessToken: response.accessToken
       };
 
       // Store admin token separately
-      localStorage.setItem('adminAccessToken', mockAdminUser.accessToken);
+      localStorage.setItem('adminAccessToken', response.accessToken);
       
       // Login to auth context
-      await login(mockAdminUser);
+      await login(adminUser);
       
       showSuccess("Thành công", "Đăng nhập thành công!");
       navigate('/admin/dashboard');

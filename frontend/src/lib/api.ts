@@ -99,7 +99,69 @@ export interface LoanApplicationsResponse {
   };
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Admin Dashboard Interfaces
+export interface AdminDashboardStats {
+  totalLoans: number;
+  totalAmount: number;
+  pendingLoans: number;
+  approvedLoans: number;
+  rejectedLoans: number;
+  completedLoans: number;
+  todayLoans: number;
+  thisWeekLoans: number;
+  thisMonthLoans: number;
+}
+
+export interface AdminRecentLoan {
+  _id: string;
+  loanApplicationId: string;
+  fullName: string;
+  phoneNumber: string;
+  loanAmount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminDashboardResponse {
+  statistics: AdminDashboardStats;
+  recentLoans: AdminRecentLoan[];
+  adminInfo: {
+    id: string;
+    username: string;
+    role: string;
+    permissions: string[];
+  };
+}
+
+export interface AdminLoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface AdminLoginResponse {
+  accessToken: string;
+  admin: {
+    id: string;
+    username: string;
+    fullName: string;
+    email: string;
+    role: string;
+    permissions: string[];
+  };
+}
+
+const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
+const envAdminKey = import.meta.env.VITE_ADMIN_API_KEY as string | undefined;
+
+if (!envApiUrl) {
+  console.error('[ENV] Missing VITE_API_URL. Please set it in your .env files.');
+}
+if (!envAdminKey) {
+  console.warn('[ENV] Missing VITE_ADMIN_API_KEY. Admin endpoints may fail.');
+}
+
+const API_BASE_URL = envApiUrl ?? '';
+const ADMIN_API_KEY = envAdminKey ?? '';
 
 async function http<T>(path: string, options: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -256,6 +318,116 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  },
+
+  // Admin APIs
+  async adminLogin(loginData: AdminLoginRequest): Promise<AdminLoginResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Admin login failed');
+    }
+    
+    return response.json();
+  },
+
+  async getAdminDashboard(token: string): Promise<AdminDashboardResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch admin dashboard data');
+    }
+    
+    return response.json();
+  },
+
+  async getAdminStatistics(token: string): Promise<AdminDashboardStats> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/statistics`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch admin statistics');
+    }
+    
+    return response.json();
+  },
+
+  async getAdminLoans(token: string, query?: { page?: number; limit?: number; status?: string }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (query?.page) queryParams.append('page', query.page.toString());
+    if (query?.limit) queryParams.append('limit', query.limit.toString());
+    if (query?.status) queryParams.append('status', query.status);
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/loans?${queryParams}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch admin loans');
+    }
+    
+    return response.json();
+  },
+
+  async getAdminLoanById(token: string, id: string): Promise<LoanApplication> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/loans/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loan detail');
+    }
+    return response.json();
+  },
+
+  async updateAdminLoan(
+    token: string,
+    id: string,
+    payload: Partial<Pick<LoanApplication, 'status' | 'notes' | 'currentStep' | 'isCompleted'>>,
+  ): Promise<LoanApplication> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/loans/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update loan');
+    }
+    return response.json();
   },
 };
 

@@ -5,24 +5,12 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { useAuthContext } from '@/App';
 
 export const AdminLayout = () => {
-  const { isAuthenticated, user } = useAuthContext();
+  const { user } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
 
-  React.useEffect(() => {
-    if (!isAuthenticated || !user) {
-      navigate('/admin/login');
-      return;
-    }
-
-    // Check if user has admin role
-    if (!user.role || !['SUPER_ADMIN', 'ADMIN', 'SALES', 'SUPPORT'].includes(user.role)) {
-      navigate('/');
-      return;
-    }
-  }, [isAuthenticated, user, navigate]);
-
-  if (!isAuthenticated || !user) {
+  // AdminRouteGuard đã kiểm tra quyền truy cập, không cần kiểm tra lại ở đây
+  if (!user) {
     return null;
   }
 

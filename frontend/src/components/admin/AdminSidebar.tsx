@@ -14,6 +14,7 @@ import {
   Calendar,
   AlertCircle
 } from 'lucide-react';
+import { api, AdminDashboardStats } from '@/lib/api';
 
 interface NavItem {
   label: string;
@@ -27,11 +28,31 @@ export const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
+  const [stats, setStats] = React.useState<AdminDashboardStats | null>(null);
+
+  React.useEffect(() => {
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('adminAccessToken') || '';
+        if (!token) return;
+        const s = await api.getAdminStatistics(token);
+        setStats(s);
+      } catch (e) {
+        // ignore
+      }
+    };
+    load();
+  }, []);
 
   const hasPermission = (permission: string) => {
     if (!user?.permissions) return false;
     return user.permissions.includes('*') || user.permissions.includes(permission);
   };
+
+  // Kiểm tra xem user có phải là admin không
+  if (!user || !['SUPER_ADMIN', 'ADMIN', 'SALES', 'SUPPORT'].includes(user.role || '')) {
+    return null; // Không hiển thị sidebar nếu không phải admin
+  }
 
   const navItems: NavItem[] = [
     {
@@ -44,7 +65,7 @@ export const AdminSidebar = () => {
       href: '/admin/loans',
       icon: FileText,
       permission: 'loan:read',
-      badge: '12'
+      badge: stats ? String((stats as any).pendingLoans ?? 0) : undefined
     },
     {
       label: 'Quản lý khách hàng',
@@ -121,7 +142,7 @@ export const AdminSidebar = () => {
         </nav>
 
         {/* Quick Stats */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        {/* <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Stats</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -137,7 +158,7 @@ export const AdminSidebar = () => {
               <span className="font-medium text-green-600">8</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

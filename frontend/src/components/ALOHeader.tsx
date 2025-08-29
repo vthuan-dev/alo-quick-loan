@@ -5,7 +5,7 @@ import { User, LogOut } from "lucide-react";
 
 export const ALOHeader = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuthContext();
+  const { user, isAuthenticated, logout, isAdmin } = useAuthContext();
 
   const handleLogin = () => {
     navigate('/login');
@@ -91,6 +91,17 @@ export const ALOHeader = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
+            {/* Nếu là admin, hiển thị link đến admin panel */}
+            {isAdmin() && (
+              <Button 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary hover:text-white"
+                onClick={() => navigate('/admin/dashboard')}
+              >
+                Admin Panel
+              </Button>
+            )}
+            
             {/* <Button 
               variant="default" 
               className="bg-success hover:bg-success/90"

@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoanDetailModal } from '@/components/admin/LoanDetailModal';
 import { useToast } from '@/contexts/ToastContext';
+import { api, AdminDashboardStats, AdminRecentLoan } from '@/lib/api';
 import { 
   DollarSign, 
   Users, 
@@ -16,32 +18,14 @@ import {
   Download
 } from 'lucide-react';
 
-interface DashboardStats {
-  totalLoans: number;
-  totalAmount: number;
-  pendingLoans: number;
-  approvedLoans: number;
-  rejectedLoans: number;
-  completedLoans: number;
-  todayLoans: number;
-  thisWeekLoans: number;
-  thisMonthLoans: number;
-}
-
-interface RecentLoan {
-  _id: string;
-  loanApplicationId: string;
-  fullName: string;
-  phoneNumber: string;
-  loanAmount: number;
-  status: string;
-  createdAt: string;
-}
+// Using interfaces from api.ts
 
 export const AdminDashboard = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentLoans, setRecentLoans] = useState<RecentLoan[]>([]);
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
+  const [recentLoans, setRecentLoans] = useState<AdminRecentLoan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const { showError } = useToast();
 
   useEffect(() => {
@@ -58,12 +42,17 @@ export const AdminDashboard = () => {
         return;
       }
 
-      // In production, call actual API
-      // const response = await api.getAdminDashboard(token);
-      // setStats(response.statistics);
-      // setRecentLoans(response.recentLoans);
-
-      // Mock data for now
+      // Call real API
+      const response = await api.getAdminDashboard(token);
+      setStats(response.statistics);
+      setRecentLoans(response.recentLoans);
+      
+      console.log('Dashboard data loaded:', response);
+    } catch (error: any) {
+      console.error('Error loading dashboard data:', error);
+      showError("Lỗi", error.message || "Không thể tải dữ liệu dashboard");
+      
+      // Fallback to mock data if API fails
       setStats({
         totalLoans: 156,
         totalAmount: 1250000000,
@@ -96,9 +85,6 @@ export const AdminDashboard = () => {
           createdAt: new Date().toISOString(),
         },
       ]);
-    } catch (error: any) {
-      console.error('Error loading dashboard data:', error);
-      showError("Lỗi", error.message || "Không thể tải dữ liệu dashboard");
     } finally {
       setIsLoading(false);
     }
@@ -287,7 +273,7 @@ export const AdminDashboard = () => {
                       <StatusIcon className="w-3 h-3 mr-1" />
                       {statusInfo.label}
                     </Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => { setSelectedLoanId(loan._id); setDetailOpen(true); }}>
                       <Eye className="w-4 h-4 mr-2" />
                       Xem chi tiết
                     </Button>
@@ -298,6 +284,7 @@ export const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
+      <LoanDetailModal open={detailOpen} onOpenChange={setDetailOpen} loanId={selectedLoanId} />
     </div>
   );
 };
