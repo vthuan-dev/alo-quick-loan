@@ -68,9 +68,6 @@ export const ALOHeader = () => {
             onClick={handleLogoClick}
             title="Click để về trang chủ"
           >
-            {/* <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">15S</span>
-            </div> */}
             <div className="text-center">
               <h1 className="text-4xl font-bold">
                 <span className="text-red-500">15</span><span className="text-green-700">S</span>
