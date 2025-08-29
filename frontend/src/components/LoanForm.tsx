@@ -290,12 +290,12 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                 value={loanAmount}
                 onValueChange={setLoanAmount}
                 max={10000000}
-                min={500000}
+                min={1000000}
                 step={500000}
                 className="w-full"
               />
               <div className="flex justify-between text-sm text-white/70">
-                <span>500.000 Vnd</span>
+                <span>1.000.000 Vnd</span>
                 <span className="text-3xl font-bold text-white">{formatCurrency(loanAmount[0])}</span>
                 <span>10.000.000 Vnd</span>
               </div>

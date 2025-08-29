@@ -23,12 +23,12 @@ export class LoanStep1Dto {
   @ApiProperty({
     description: 'Loan amount requested (in VND)',
     example: 2500000,
-    minimum: 500000,
+    minimum: 1000000,
     maximum: 10000000,
   })
   @IsNumber()
   @IsNotEmpty()
-  @Min(500000)
+  @Min(1000000)
   @Max(10000000)
   loanAmount: number;
 
