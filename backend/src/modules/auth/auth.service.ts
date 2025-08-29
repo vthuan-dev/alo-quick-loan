@@ -24,7 +24,13 @@ export class AuthService {
     const { phoneNumber, email } = dto;
 
     try {
-      // Generate OTP
+      // Validate phone number exists in system (optional check)
+      const isValidPhone = await this.validateUser(phoneNumber);
+      if (!isValidPhone) {
+        throw new BadRequestException('Phone number not found in our system');
+      }
+
+      // Generate OTP for the phone number
       const { otp, expiresIn } = await this.otpService.createOtp(phoneNumber);
 
       // Send OTP via Email
@@ -44,7 +50,7 @@ export class AuthService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(`Failed to send OTP to ${email}:`, error);
+      this.logger.error(`Failed to send OTP to ${email} for phone ${phoneNumber}:`, error);
       throw new BadRequestException('Failed to send OTP. Please try again.');
     }
   }
@@ -87,9 +93,22 @@ export class AuthService {
   }
 
   async validateUser(phoneNumber: string): Promise<boolean> {
-    // Check if phone number exists in our system
-    // You might want to check if they have any loan applications
-    return true;
+    // Check if phone number exists in our loan system
+    try {
+      // TODO: Import loan service to check if phone exists in loan applications
+      // For now, return true to allow all phone numbers
+      // In production, you should check against the loan database
+      
+      // Example implementation:
+      // const loanService = this.moduleRef.get(LoanService);
+      // const exists = await loanService.checkPhoneExists(phoneNumber);
+      // return exists;
+      
+      return true;
+    } catch (error) {
+      this.logger.error(`Error validating phone number ${phoneNumber}:`, error);
+      return false;
+    }
   }
 
   // New methods for OTP as password flow

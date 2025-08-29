@@ -4,6 +4,7 @@ import { LoanController } from './loan.controller';
 import { LoanService } from './loan.service';
 import { AdminLoanController } from './admin-loan.controller';
 import { AdminLoanService } from './admin-loan.service';
+import { ClientLoanController } from './client-loan.controller';
 import { LoanApplication, LoanApplicationSchema } from './schemas/loan-application.schema';
 import { NotificationModule } from '../notification/notification.module';
 
@@ -14,7 +15,7 @@ import { NotificationModule } from '../notification/notification.module';
     ]),
     NotificationModule,
   ],
-  controllers: [LoanController, AdminLoanController],
+  controllers: [LoanController, AdminLoanController, ClientLoanController],
   providers: [LoanService, AdminLoanService],
   exports: [LoanService, AdminLoanService],
 })

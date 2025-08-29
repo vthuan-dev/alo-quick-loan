@@ -40,6 +40,65 @@ export interface Step3Request {
   bankName: string;
 }
 
+export interface SendOtpResponse {
+  message: string;
+  expiresIn: number;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  phoneNumber: string;
+  expiresIn: number;
+}
+
+export interface LoanApplication {
+  _id?: string;
+  loanApplicationId: string;
+  fullName: string;
+  phoneNumber: string;
+  loanAmount?: number;
+  loanTerm?: number;
+  dailyPayment?: number;
+  totalRepayment?: number;
+  gender?: string;
+  dob?: Date;
+  identityNumber?: string;
+  phoneBrand?: string;
+  location?: string;
+  relativePhone?: string;
+  companyPhone?: string;
+  bankAccount?: string;
+  bankName?: string;
+  status: 'PENDING' | 'CONTACTED' | 'APPROVED' | 'REJECTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  notes?: string;
+  currentStep: number;
+  isCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface LoanStatistics {
+  totalApplications: number;
+  pendingApplications: number;
+  approvedApplications: number;
+  rejectedApplications: number;
+  completedApplications: number;
+  totalLoanAmount: number;
+  totalPayment: number;
+  approvedAmount: number;
+  pendingAmount: number;
+}
+
+export interface LoanApplicationsResponse {
+  data: LoanApplication[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 async function http<T>(path: string, options: RequestInit): Promise<T> {
@@ -69,6 +128,112 @@ export const api = {
       throw new Error(errorData.message || 'Failed to check existing application');
     }
 
+    return response.json();
+  },
+
+  async sendOtp(payload: { phoneNumber: string; email: string }): Promise<SendOtpResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to send OTP');
+    }
+
+    return response.json();
+  },
+
+  async verifyOtpAndLogin(payload: { phoneNumber: string; email: string; otp: string }): Promise<LoginResponse> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to verify OTP and login');
+    }
+    return response.json();
+  },
+
+  // Loan Management APIs
+  async getMyLoanApplications(token: string, query?: { page?: number; limit?: number; status?: string }): Promise<LoanApplicationsResponse> {
+    const queryParams = new URLSearchParams();
+    if (query?.page) queryParams.append('page', query.page.toString());
+    if (query?.limit) queryParams.append('limit', query.limit.toString());
+    if (query?.status) queryParams.append('status', query.status);
+
+    const response = await fetch(`${API_BASE_URL}/api/client/loans/my-applications?${queryParams}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loan applications');
+    }
+    return response.json();
+  },
+
+  async getMyLoanApplication(token: string, loanId: string): Promise<LoanApplication> {
+    const response = await fetch(`${API_BASE_URL}/api/client/loans/my-applications/${loanId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loan application');
+    }
+    return response.json();
+  },
+
+  async getMyLoanStatistics(token: string): Promise<LoanStatistics> {
+    const response = await fetch(`${API_BASE_URL}/api/client/loans/statistics`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loan statistics');
+    }
+    return response.json();
+  },
+
+  async getMyLoanSummary(token: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/client/loans/summary`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loan summary');
+    }
+    return response.json();
+  },
+
+  async getRecentLoanActivity(token: string): Promise<LoanApplication[]> {
+    const response = await fetch(`${API_BASE_URL}/api/client/loans/recent-activity`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch recent activity');
+    }
     return response.json();
   },
 
