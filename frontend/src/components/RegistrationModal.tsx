@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { api, Gender } from "@/lib/api";
 import React from "react";
 
@@ -16,6 +16,7 @@ interface RegistrationModalProps {
 export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     gender: "",
     birthDate: "",
@@ -42,34 +43,106 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
           setStep(stepNumber);
         }
       }
+      // Load thông tin đã có từ localStorage
+      loadFormData();
     }
   }, [isOpen, loanApplicationId]);
+
+  // Load thông tin form từ localStorage
+  const loadFormData = () => {
+    const savedData = localStorage.getItem(`formData_${loanApplicationId}`);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setFormData(prev => ({ ...prev, ...parsedData }));
+      } catch (e) {
+        console.error('Error loading form data:', e);
+      }
+    }
+  };
+
+  // Save thông tin form vào localStorage
+  const saveFormData = () => {
+    if (loanApplicationId) {
+      localStorage.setItem(`formData_${loanApplicationId}`, JSON.stringify(formData));
+    }
+  };
+
+  // Auto-save khi form thay đổi
+  React.useEffect(() => {
+    if (loanApplicationId) {
+      saveFormData();
+    }
+  }, [formData, loanApplicationId]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleNext = async () => {
-    if (step === 1 && loanApplicationId) {
-      // Map FE → BE Step2
-      try {
-        await api.step2({
-          loanApplicationId,
-          gender: (formData.gender === 'male' ? 'MALE' : formData.gender === 'female' ? 'FEMALE' : 'OTHER') as Gender,
-          dob: formData.birthDate,
-          identityNumber: formData.cccdNumber,
-          phoneBrand: formData.phoneInUse || formData.iphoneModel || 'Unknown',
-          location: formData.location,
-        });
-        setStep(2);
-        // Cập nhật step trong localStorage
-        localStorage.setItem('existingApplicationStep', '2');
-      } catch (e) {
-        alert('Vui lòng kiểm tra lại thông tin bước 1.');
+    if (step === 1) {
+      // Validate step 1
+      if (!formData.gender || !formData.birthDate || !formData.cccdNumber || !formData.location) {
+        alert('Vui lòng điền đầy đủ thông tin bước 1');
+        return;
+      }
+      
+      if (loanApplicationId) {
+        try {
+          setIsLoading(true);
+          await api.step2({
+            loanApplicationId,
+            gender: (formData.gender === 'male' ? 'MALE' : formData.gender === 'female' ? 'FEMALE' : 'OTHER') as Gender,
+            dob: formData.birthDate,
+            identityNumber: formData.cccdNumber,
+            phoneBrand: formData.phoneInUse || formData.iphoneModel || 'Unknown',
+            location: formData.location,
+          });
+          setStep(2);
+          localStorage.setItem('existingApplicationStep', '2');
+        } catch (e) {
+          alert('Vui lòng kiểm tra lại thông tin bước 1.');
+        } finally {
+          setIsLoading(false);
+        }
       }
       return;
     }
-    if (step < 3) setStep(step + 1);
+    
+    if (step === 2) {
+      // Validate step 2
+      if (!formData.relativePhone || !formData.employerPhone || !formData.bankAccount || !formData.bankName) {
+        alert('Vui lòng điền đầy đủ thông tin bước 2');
+        return;
+      }
+      
+      if (loanApplicationId) {
+        try {
+          setIsLoading(true);
+          await api.step3({
+            loanApplicationId,
+            relativePhone: formData.relativePhone,
+            companyPhone: formData.employerPhone,
+            bankAccount: formData.bankAccount,
+            bankName: formData.bankName,
+          });
+          setStep(3);
+          localStorage.setItem('existingApplicationStep', '3');
+        } catch (e) {
+          alert('Vui lòng kiểm tra lại thông tin bước 2.');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      return;
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+      localStorage.setItem('existingApplicationStep', (step - 1).toString());
+    }
   };
 
   const handleSubmit = async () => {
@@ -84,7 +157,6 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         bankName: formData.bankName,
       });
       setStep(3);
-      // Cập nhật step trong localStorage
       localStorage.setItem('existingApplicationStep', '3');
     } catch (e) {
       alert('Vui lòng kiểm tra lại thông tin bước 2.');
@@ -97,26 +169,26 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
     <div className="flex items-center justify-center mb-6">
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer ${
             step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-          }`}>
+          }`} onClick={() => step > 1 && setStep(1)}>
             1
           </div>
           <div className={`w-8 h-0.5 ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
         </div>
         <div className="flex items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer ${
             step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-          }`}>
+          }`} onClick={() => step > 2 && setStep(2)}>
             2
           </div>
           <div className={`w-8 h-0.5 ${step >= 3 ? 'bg-primary' : 'bg-muted'}`} />
         </div>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-          step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-        }`}>
-          3
-        </div>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer ${
+            step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+          }`} onClick={() => step === 3 && setStep(3)}>
+            3
+          </div>
       </div>
     </div>
   );
@@ -203,9 +275,21 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         </div>
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-6">
-        Tiếp tục
-      </Button>
+      <div className="flex justify-end mt-6">
+        <Button onClick={handleNext} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Đang xử lý...
+            </>
+          ) : (
+            <>
+              Tiếp tục
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 
@@ -258,18 +342,61 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         </div>
       </div>
 
-      <Button onClick={handleSubmit} className="w-full mt-6" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Đang xử lý...
-          </>
-        ) : (
-          'Gửi đăng ký'
-        )}
-      </Button>
+      <div className="flex justify-between mt-6">
+        <Button variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Quay lại
+        </Button>
+        <Button onClick={handleNext} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Đang xử lý...
+            </>
+          ) : (
+            <>
+              Tiếp tục
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
+
+  // Hàm xử lý khi hoàn tất - reset lại tất cả
+  const handleComplete = () => {
+    // Reset form data
+    setFormData({
+      gender: "",
+      birthDate: "",
+      cccdNumber: "",
+      phoneInUse: "",
+      iphoneModel: "",
+      location: "",
+      relativePhone: "",
+      employerPhone: "",
+      bankAccount: "",
+      bankName: ""
+    });
+    
+    // Reset step về 1
+    setStep(1);
+    
+    // Xóa dữ liệu từ localStorage
+    if (loanApplicationId) {
+      localStorage.removeItem(`formData_${loanApplicationId}`);
+      localStorage.removeItem('existingApplicationStep');
+    }
+    
+    // Đóng modal
+    onClose();
+    
+    // Sau 3 giây, refresh lại trang web
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+  };
 
   const renderStep3 = () => (
     <div className="text-center py-8">
@@ -279,14 +406,24 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
       <p className="text-sm text-muted-foreground mb-6">
         Chúng tôi sẽ liên hệ với bạn trong vòng 5-15 phút
       </p>
-      <Button onClick={onClose} className="bg-success hover:bg-success/90">
-        Hoàn tất
-      </Button>
+      <p className="text-xs text-muted-foreground mb-4">
+        Trang sẽ tự động làm mới sau 3 giây...
+      </p>
+      <div className="flex justify-center">
+        <Button onClick={handleComplete} className="bg-success hover:bg-success/90">
+          Tiếp tục
+        </Button>
+      </div>
     </div>
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        // Khi đóng modal (click dấu X hoặc click outside), reset lại trang
+        handleComplete();
+      }
+    }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="text-center mb-4">

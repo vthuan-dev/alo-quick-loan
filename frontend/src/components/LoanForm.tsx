@@ -1,4 +1,4 @@
-import { useState } from "react";
+  import { useState } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,17 +150,28 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
       
       if (existingCheck.exists) {
         if (!existingCheck.canContinue) {
-          // Hồ sơ đã hoàn thành và đang chờ xét duyệt
-          console.log('⚠️ Showing warning toast for pending application');
-          showInfo(
-            "Hồ sơ đang chờ xét duyệt",
-            existingCheck.message || "Quý khách đang có hồ sơ đang chờ xét duyệt, vui lòng thử lại sau"
-          );
+          // Hồ sơ đã hoàn thành hoặc không thể tiếp tục
+          console.log('⚠️ Application cannot continue:', existingCheck.message);
+          
+          // Kiểm tra xem hồ sơ đã hoàn thành chưa
+          if (existingCheck.currentStep === 3) {
+            showInfo(
+              "Hồ sơ đã hoàn thành",
+              existingCheck.message || "Hồ sơ của bạn đã hoàn thành và đang chờ xét duyệt, vui lòng thử lại sau"
+            );
+          } else {
+            showInfo(
+              "Hồ sơ không thể tiếp tục",
+              existingCheck.message || "Hồ sơ của bạn không thể tiếp tục, vui lòng liên hệ hỗ trợ"
+            );
+          }
+          
           setIsChecking(false);
           return;
         } else {
           // Hồ sơ có thể tiếp tục - lưu thông tin để chuyển tới step tiếp theo
-          console.log('ℹ️ Showing info toast for continuing application');
+          console.log('ℹ️ Continuing application at step:', existingCheck.currentStep);
+          
           if (existingCheck.loanApplicationId) {
             localStorage.setItem('loanApplicationId', existingCheck.loanApplicationId);
             localStorage.setItem('existingApplicationStep', existingCheck.currentStep?.toString() || '1');
@@ -168,7 +179,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
           
           showInfo(
             "Tiếp tục hồ sơ",
-            existingCheck.message || "Chuyển tới bước tiếp theo của hồ sơ"
+            existingCheck.message || `Chuyển tới bước ${(existingCheck.currentStep || 1) + 1} của hồ sơ`
           );
           
           // Chuyển tới step tiếp theo

@@ -237,6 +237,8 @@ export class LoanService {
     application?: LoanApplication;
     canContinue: boolean;
     message?: string;
+    currentStep?: number;
+    loanApplicationId?: string;
   }> {
     const application = await this.loanModel.findOne({
       phoneNumber,
@@ -247,31 +249,68 @@ export class LoanService {
       return { exists: false, canContinue: false };
     }
 
-    // Check if application is completed and pending approval
-    if (application.isCompleted && application.status === 'PENDING') {
-      return {
-        exists: true,
-        application,
-        canContinue: false,
-        message: 'Quý khách đang có hồ sơ đang chờ xét duyệt, vui lòng thử lại sau'
-      };
+    // Check if application is completed (all 3 steps done)
+    if (application.isCompleted) {
+      // Hồ sơ đã hoàn thành tất cả 3 bước
+      if (application.status === 'PENDING') {
+        return {
+          exists: true,
+          application,
+          canContinue: false,
+          message: 'Quý khách đang có hồ sơ đã hoàn thành và đang chờ xét duyệt, vui lòng thử lại sau',
+          currentStep: application.currentStep,
+          loanApplicationId: application.loanApplicationId
+        };
+      } else if (application.status === 'APPROVED') {
+        return {
+          exists: true,
+          application,
+          canContinue: false,
+          message: 'Hồ sơ của bạn đã được phê duyệt và đang trong quá trình xử lý',
+          currentStep: application.currentStep,
+          loanApplicationId: application.loanApplicationId
+        };
+      } else if (application.status === 'IN_PROGRESS') {
+        return {
+          exists: true,
+          application,
+          canContinue: false,
+          message: 'Hồ sơ của bạn đang được xử lý, vui lòng chờ thông báo',
+          currentStep: application.currentStep,
+          loanApplicationId: application.loanApplicationId
+        };
+      } else if (application.status === 'COMPLETED') {
+        return {
+          exists: true,
+          application,
+          canContinue: false,
+          message: 'Hồ sơ của bạn đã hoàn tất',
+          currentStep: application.currentStep,
+          loanApplicationId: application.loanApplicationId
+        };
+      }
     }
 
-    // Check if application can continue (not completed)
-    if (!application.isCompleted) {
+    // Check if application can continue (not completed yet)
+    if (!application.isCompleted && application.currentStep < 3) {
       return {
         exists: true,
         application,
         canContinue: true,
-        message: `Tiếp tục hồ sơ ở bước ${application.currentStep}`
+        message: `Tiếp tục hồ sơ ở bước ${application.currentStep + 1}`,
+        currentStep: application.currentStep,
+        loanApplicationId: application.loanApplicationId
       };
     }
 
+    // Fallback case
     return {
       exists: true,
       application,
       canContinue: false,
-      message: 'Hồ sơ đã hoàn thành'
+      message: 'Hồ sơ không thể tiếp tục',
+      currentStep: application.currentStep,
+      loanApplicationId: application.loanApplicationId
     };
   }
 
