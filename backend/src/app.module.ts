@@ -11,6 +11,7 @@ import { SmsModule } from './modules/sms/sms.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TwilioModule } from './modules/twilio/twilio.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
     AuthModule,
     TwilioModule,
     FirebaseModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

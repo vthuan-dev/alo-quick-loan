@@ -6,6 +6,9 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoanManagement from "./pages/LoanManagement";
 import NotFound from "./pages/NotFound";
+import { AdminLayout } from "./layouts/AdminLayout";
+import { AdminLogin } from "./pages/admin/Login";
+import { AdminDashboard } from "./pages/admin/Dashboard";
 import { ToastProvider, useToast } from "@/contexts/ToastContext";
 import { useAuth } from "@/hooks/use-auth";
 import { createContext, useContext } from "react";
@@ -47,6 +50,14 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/loan-management" element={<LoanManagement />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            {/* Add more admin routes here later */}
+          </Route>
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 
 interface User {
+  id?: string;
   email: string;
+  fullName?: string;
   accessToken: string;
+  role?: string;
+  permissions?: string[];
 }
 
 export const useAuth = () => {
