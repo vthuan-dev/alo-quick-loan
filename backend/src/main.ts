@@ -12,26 +12,7 @@ async function bootstrap() {
   
   // Enable CORS
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests from these origins
-      const allowedOrigins = [
-        'http://localhost:8080',
-        'http://localhost:8081',
-        'http://localhost:3000',
-        'http://127.0.0.1:8080',
-        'http://127.0.0.1:8081',
-        'http://127.0.0.1:3000',
-      ];
-      
-      // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: true, // cho tất cả origin
     credentials: true,
   });
   
