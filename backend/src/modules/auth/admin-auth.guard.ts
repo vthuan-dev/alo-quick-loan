@@ -15,9 +15,8 @@ export class AdminAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'your-secret-key',
-      });
+      // Use JwtModule configured secret (do not override here)
+      const payload = await this.jwtService.verifyAsync(token);
 
       // Check if user has admin role
       if (!payload.role || !['SUPER_ADMIN', 'ADMIN', 'SALES', 'SUPPORT'].includes(payload.role)) {
