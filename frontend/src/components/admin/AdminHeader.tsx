@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuthContext } from '@/App';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { ChangePasswordModal } from './ChangePasswordModal';
 import { 
   User, 
   Settings, 
@@ -22,7 +23,8 @@ import {
   FileText,
   Clock,
   Volume2,
-  VolumeX
+  VolumeX,
+  Lock
 } from 'lucide-react';
 
 export const AdminHeader = () => {
@@ -30,6 +32,7 @@ export const AdminHeader = () => {
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead, soundEnabled, toggleSound } = useNotifications();
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -224,6 +227,10 @@ export const AdminHeader = () => {
                 <User className="w-4 h-4 mr-2" />
                 Profile
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setChangePasswordOpen(true)}>
+                <Lock className="w-4 h-4 mr-2" />
+                Đổi mật khẩu
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -244,6 +251,12 @@ export const AdminHeader = () => {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* Change Password Modal */}
+      <ChangePasswordModal 
+        isOpen={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </header>
   );
 };

@@ -459,6 +459,28 @@ export const api = {
     }
     return response.json();
   },
+
+  // Change Password
+  async changePassword(token: string, data: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/api/admin/change-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to change password');
+    }
+    return response.json();
+  },
 };
 
 

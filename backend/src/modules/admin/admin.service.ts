@@ -22,6 +22,7 @@ import { Admin, AdminDocument } from './schemas/admin.schema';
 import { LoanApplication } from '../loan/schemas/loan-application.schema';
 import { AdminCreateDto, AdminUpdateDto, AdminLoginDto, AdminProfileDto } from './dto/admin.dto';
 import { LoanFilterDto, LoanUpdateDto, LoanBulkUpdateDto, LoanStatisticsDto } from './dto/loan-management.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AdminService {
@@ -332,6 +333,74 @@ export class AdminService {
       lastLoginAt: (admin as any).lastLoginAt,
       createdAt: (admin as any).createdAt,
       updatedAt: (admin as any).updatedAt,
+    };
+  }
+
+  // Change password method
+  async changePassword(adminId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const { currentPassword, newPassword, confirmPassword } = changePasswordDto;
+
+    // Validate password confirmation
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('Mật khẩu mới và xác nhận mật khẩu không khớp');
+    }
+
+    // Find admin
+    const admin = await this.adminModel.findById(adminId);
+    if (!admin) {
+      throw new NotFoundException('Admin not found');
+    }
+
+    // Verify current password
+    const storedPassword: string = (admin as any).password;
+    let isCurrentPasswordValid = false;
+
+    // Support SHA256 format: sha256$<salt>$<hex>
+    if (storedPassword?.startsWith('sha256$')) {
+      const [, salt, hex] = storedPassword.split('$');
+      const computed = crypto
+        .createHmac('sha256', salt)
+        .update(currentPassword)
+        .digest('hex');
+      isCurrentPasswordValid = computed === hex;
+    } else if (bcrypt) {
+      try {
+        isCurrentPasswordValid = await bcrypt.compare(currentPassword, storedPassword);
+      } catch (e) {
+        isCurrentPasswordValid = storedPassword === currentPassword;
+      }
+    } else {
+      // Fallback: plaintext comparison (dev-only)
+      isCurrentPasswordValid = storedPassword === currentPassword;
+    }
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Mật khẩu hiện tại không đúng');
+    }
+
+    // Hash new password
+    let hashedPassword: string;
+    if (bcrypt) {
+      const saltRounds = 10;
+      hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    } else {
+      // Fallback: SHA256 hash
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hash = crypto
+        .createHmac('sha256', salt)
+        .update(newPassword)
+        .digest('hex');
+      hashedPassword = `sha256$${salt}$${hash}`;
+    }
+
+    // Update password
+    await this.adminModel.findByIdAndUpdate(adminId, {
+      password: hashedPassword,
+      updatedAt: new Date(),
+    });
+
+    return {
+      message: 'Mật khẩu đã được thay đổi thành công',
     };
   }
 }

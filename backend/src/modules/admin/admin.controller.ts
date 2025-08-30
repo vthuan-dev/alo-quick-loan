@@ -14,6 +14,7 @@ import { AdminService } from './admin.service';
 import { AdminAuthGuard } from '../auth/admin-auth.guard';
 import { AdminCreateDto, AdminUpdateDto, AdminLoginDto } from './dto/admin.dto';
 import { LoanFilterDto, LoanUpdateDto, LoanBulkUpdateDto } from './dto/loan-management.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('api/admin')
 export class AdminController {
@@ -143,6 +144,13 @@ export class AdminController {
         permissions: req.user.permissions,
       },
     };
+  }
+
+  // Change password
+  @Post('change-password')
+  @UseGuards(AdminAuthGuard)
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Request() req) {
+    return this.adminService.changePassword(req.user.sub, changePasswordDto);
   }
 
 }
