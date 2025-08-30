@@ -82,7 +82,7 @@ export const AdminLoansPage = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between gap-4">
           <CardTitle>Quản lý khoản vay</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={load}>
@@ -92,7 +92,7 @@ export const AdminLoansPage = () => {
         </CardHeader>
         <CardContent>
           {/* Tabs */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <Button
               variant={tab === 'ACTIVE' ? 'default' : 'outline'}
               onClick={() => setTab('ACTIVE')}
@@ -109,7 +109,7 @@ export const AdminLoansPage = () => {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div className="flex flex-wrap gap-3 mb-4 w-full">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input 
@@ -122,11 +122,11 @@ export const AdminLoansPage = () => {
                   }
                 }} 
                 placeholder="Tìm tên, SĐT, mã hồ sơ..." 
-                className="pl-9 w-64" 
+                className="pl-9 w-full md:w-64" 
               />
             </div>
             <Select value={status ?? 'ALL'} onValueChange={(v) => setStatus(v === 'ALL' ? undefined : v)}>
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-full md:w-56">
                 <SelectValue placeholder="Tất cả trạng thái" />
               </SelectTrigger>
               <SelectContent>
@@ -139,7 +139,7 @@ export const AdminLoansPage = () => {
           </div>
 
           <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-muted/40">
                 <tr>
                   <th className="text-left p-3">Mã hồ sơ</th>
@@ -152,21 +152,21 @@ export const AdminLoansPage = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Đang tải...</td></tr>
+                  <tr><td colSpan={6} className="p-4 md:p-6 text-center text-muted-foreground">Đang tải...</td></tr>
                 ) : items.length === 0 ? (
-                  <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Không có dữ liệu</td></tr>
+                  <tr><td colSpan={6} className="p-4 md:p-6 text-center text-muted-foreground">Không có dữ liệu</td></tr>
                 ) : (
                   filteredItems.map(item => (
                     <tr key={item._id || item.loanApplicationId} className="border-t">
-                      <td className="p-3 font-medium">{item.loanApplicationId}</td>
-                      <td className="p-3">{item.fullName}</td>
-                      <td className="p-3">{item.phoneNumber}</td>
-                      <td className="p-3">{new Intl.NumberFormat('vi-VN').format(item.loanAmount || 0)} đ</td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
+                      <td className="p-2 md:p-3 font-medium text-xs md:text-sm">{item.loanApplicationId}</td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm">{item.fullName}</td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm">{item.phoneNumber}</td>
+                      <td className="p-2 md:p-3 text-xs md:text-sm">{new Intl.NumberFormat('vi-VN').format(item.loanAmount || 0)} đ</td>
+                      <td className="p-2 md:p-3">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                           {renderStatus(item.status)}
                           <Select value={item.status} onValueChange={(v) => updateStatus(item._id || '', v)} disabled={item.status === 'COMPLETED'}>
-                            <SelectTrigger className="h-8 w-40" disabled={item.status === 'COMPLETED'}><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-8 w-full md:w-40 text-xs md:text-sm" disabled={item.status === 'COMPLETED'}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               {statusOptions.filter(o=>o.value).map(opt => (
                                 <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -175,9 +175,9 @@ export const AdminLoansPage = () => {
                           </Select>
                         </div>
                       </td>
-                      <td className="p-3 text-right">
+                      <td className="p-2 md:p-3 text-right">
                         <Button variant="outline" size="sm" onClick={() => { setSelectedId(item._id || ''); setDetailOpen(true); }}>
-                          <Eye className="w-4 h-4 mr-2" /> Xem
+                          <Eye className="w-4 h-4 md:mr-2" /> <span className="hidden md:inline">Xem</span>
                         </Button>
                       </td>
                     </tr>

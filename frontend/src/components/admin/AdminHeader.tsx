@@ -38,10 +38,10 @@ export const AdminHeader = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-3 md:px-6 py-4">
+              <div className="flex items-center justify-between w-full">
         {/* Logo and Brand */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           <div 
             className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate('/admin/dashboard')}
@@ -55,8 +55,8 @@ export const AdminHeader = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mx-8">
+        {/* Search Bar - Hide on Mobile */}
+        <div className="hidden md:block flex-1 max-w-md mx-4 lg:mx-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -68,7 +68,7 @@ export const AdminHeader = () => {
         </div>
 
         {/* Right Side - Notifications and User Menu */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="w-5 h-5" />
@@ -80,11 +80,11 @@ export const AdminHeader = () => {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2">
+              <Button variant="ghost" className="flex items-center space-x-2 pr-0 md:pr-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
-                <div className="text-left">
+                <div className="text-left hidden md:block">
                   <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
                   <p className="text-xs text-gray-500">{getRoleDisplayName(user?.role || '')}</p>
                 </div>

@@ -98,7 +98,7 @@ export const AdminSidebar = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen">
+    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen hidden md:block">
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Admin Menu</h2>
         
