@@ -86,53 +86,53 @@ export const ALOHeader = () => {
       
       {/* Main Header */}
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          {/* Mobile: Hamburger Menu */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 text-orange-500 hover:text-orange-600"
-              onClick={toggleMobileMenu}
-              aria-label="Toggle mobile menu"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </Button>
-          </div>
+                 <div className="flex items-center justify-between relative">
+           {/* Mobile: Hamburger Menu */}
+           <div className="md:hidden">
+             <Button
+               variant="ghost"
+               size="sm"
+               className="p-1 text-orange-500 hover:text-orange-600"
+               onClick={toggleMobileMenu}
+               aria-label="Toggle mobile menu"
+             >
+               {isMobileMenuOpen ? (
+                 <X className="w-6 h-6" />
+               ) : (
+                 <Menu className="w-6 h-6" />
+               )}
+             </Button>
+           </div>
 
-          {/* Desktop: Logo Left */}
-          <div className="hidden md:block">
-            <div 
-              className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={handleLogoClick}
-              title="Click để về trang chủ"
-            >
-              <div className="text-center">
-                <h1 className="text-3xl font-bold">
-                  <span className="text-red-500">15</span><span className="text-green-700">S</span>
-                </h1>
-                <p className="text-sm text-muted-foreground">Tiền về liền tay</p>
-              </div>
-            </div>
-          </div>
+           {/* Desktop: Logo Left */}
+           <div className="hidden md:block">
+             <div 
+               className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
+               onClick={handleLogoClick}
+               title="Click để về trang chủ"
+             >
+               <div className="text-center">
+                 <h1 className="text-3xl font-bold">
+                   <span className="text-red-500">15</span><span className="text-green-700">S</span>
+                 </h1>
+                 <p className="text-sm text-muted-foreground">Tiền về liền tay</p>
+               </div>
+             </div>
+           </div>
 
-          {/* Mobile: Centered Logo */}
-          <div className="md:hidden flex-1 flex justify-center">
-            <div 
-              className="text-center cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={handleLogoClick}
-              title="Click để về trang chủ"
-            >
-              <h1 className="text-4xl font-bold">
-                <span className="text-red-500">15</span><span className="text-green-700">S</span>
-              </h1>
-              <p className="text-base text-gray-600">Trả góp liền tay</p>
-            </div>
-          </div>
+           {/* Mobile: Centered Logo */}
+           <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
+             <div 
+               className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+               onClick={handleLogoClick}
+               title="Click để về trang chủ"
+             >
+               <h1 className="text-4xl font-bold">
+                 <span className="text-red-500">15</span><span className="text-green-700">S</span>
+               </h1>
+               <p className="text-base text-gray-600">Trả góp liền tay</p>
+             </div>
+           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
@@ -212,14 +212,14 @@ export const ALOHeader = () => {
                 <User className="w-4 h-4 text-primary" />
               </div>
             ) : (
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1 rounded-full"
-                onClick={handleLogin}
-              >
-                Đăng Nhập
-              </Button>
+                             <Button 
+                 variant="default" 
+                 size="sm"
+                 className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-full"
+                 onClick={handleLogin}
+               >
+                 Đăng Nhập
+               </Button>
             )}
           </div>
         </div>
