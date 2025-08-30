@@ -268,10 +268,10 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
     <div className="bg-gradient-hero rounded-xl p-5 shadow-card-custom text-primary-foreground max-w-4xl mx-auto">
       {/* Promo Banner - Full Width */}
       <div className="text-center mb-5">
-        <h1 className="text-2xl font-bold leading-tight mb-1">
+        <h1 className="text-xl font-bold leading-tight mb-1">
           <span className="text-white">0%</span> lãi suất cho khách hàng mới!
         </h1>
-        <h2 className="text-xl font-bold">
+        <h2 className="text-lg font-bold">
           Nhận tiền trong <span className="text-accent-red">5 phút</span> 24/7
         </h2>
         <p className="text-white/80 text-sm mt-1">
@@ -279,19 +279,79 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4 items-start">
-        {/* Column 1 - Mobile first */}
-        <div className="space-y-3 order-1">
-          {/* Application Form */}
+      <div className="grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left Column - Loan Info */}
+        <div className="order-2 lg:order-1">
+          {/* Desktop - Loan Amount Slider */}
+          <div className="hidden lg:block space-y-4 mb-5">
+            <div className="space-y-2">
+              <Label className="text-white text-sm font-medium">Tôi cần vay tiền</Label>
+              <div className="space-y-2">
+                <div className="text-xl font-bold text-white mb-2">{formatCurrency(loanAmount[0])}</div>
+                <Slider
+                  value={loanAmount}
+                  onValueChange={setLoanAmount}
+                  max={10000000}
+                  min={1000000}
+                  step={500000}
+                  className="w-full h-1"
+                />
+                <div className="flex justify-between text-xs text-white/70">
+                  <span>1.000.000</span>
+                  <span>10.000.000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Loan Total */}
+            <div className="space-y-1">
+              <Label className="text-white text-sm font-medium">Tổng số</Label>
+              <div className="text-xl font-bold text-white">{formatCurrency(totalRepayment)}</div>
+            </div>
+
+            {/* Loan Term Selection with Payment */}
+            <div className="space-y-1 mt-6">
+              <Label className="text-white text-sm font-medium">Kỳ hạn vay</Label>
+              <div className="bg-white/15 rounded-md p-3 border border-white/20">
+                <RadioGroup 
+                  value={loanTerm.toString()} 
+                  onValueChange={(value) => setLoanTerm(parseInt(value) as 30 | 40)}
+                  className="space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5">
+                      <RadioGroupItem value="30" id="term-30" className="w-3.5 h-3.5" />
+                      <Label htmlFor="term-30" className="text-white cursor-pointer text-sm">30 ngày</Label>
+                    </div>
+                    <div className="text-white font-medium text-sm">{formatCurrency(getDailyPayment(loanAmount[0], 30))}/ngày</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5">
+                      <RadioGroupItem value="40" id="term-40" className="w-3.5 h-3.5" />
+                      <Label htmlFor="term-40" className="text-white cursor-pointer text-sm">40 ngày</Label>
+                    </div>
+                    <div className="text-white font-medium text-sm">{formatCurrency(getDailyPayment(loanAmount[0], 40))}/ngày</div>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile - Loan Summary - Moved to registration form section */}
+          <div className="block lg:hidden mb-4 invisible h-0">
+            {/* This empty placeholder keeps the layout consistent in desktop mode */}
+          </div>
+        </div>
+
+        {/* Right Column - Registration Form */}
+        <div className="order-1 lg:order-2 lg:mt-8">
           <div className="bg-white/95 backdrop-blur-sm rounded-md p-3 space-y-2.5 relative z-10">
-            <h3 className="text-foreground font-bold text-sm text-center mb-2">Thông tin đăng ký</h3>
-            
-            {/* Loan Summary - Mobile only - right at the top of the form */}
-            <div className="mb-3 space-y-3 block lg:hidden">
+            {/* Mobile - Loan Summary */}
+            <div className="block lg:hidden mb-4">
               <div className="bg-orange-50 border border-orange-100 p-2 rounded-md">
                 <div className="flex flex-col">
                   <div className="text-primary font-medium text-xs mb-1">Tôi cần vay tiền</div>
-                  <div className="text-lg font-bold text-primary text-center">{formatCurrency(loanAmount[0])}</div>
+                  <div className="text-lg font-bold text-primary text-left">{formatCurrency(loanAmount[0])}</div>
                   <div className="pt-2">
                     <Slider
                       value={loanAmount}
@@ -309,8 +369,16 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                 </div>
                 <div className="mt-2 px-2">
                   <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Tổng số:</span>
+                    <span className="text-sm font-bold text-primary">{formatCurrency(totalRepayment)}</span>
+                  </div>
+                </div>
+                <div className="mt-2 px-2">
+                  <div className="mb-1">
                     <span className="text-xs text-gray-600">Kỳ hạn vay</span>
-                    <div className="flex space-x-3">
+                  </div>
+                  <div className="space-y-2 border-t border-orange-100 pt-2">
+                    <div className="flex justify-between items-center">
                       <div 
                         className="flex items-center space-x-1 cursor-pointer"
                         onClick={() => setLoanTerm(30)}
@@ -318,6 +386,9 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                         <div className={`w-3 h-3 rounded-full ${loanTerm === 30 ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <span className={`text-xs ${loanTerm === 30 ? 'text-primary font-medium' : 'text-gray-600'}`}>30 ngày</span>
                       </div>
+                      <span className={`text-xs ${loanTerm === 30 ? 'text-primary font-medium' : 'text-gray-600'}`}>{formatCurrency(getDailyPayment(loanAmount[0], 30))}/ngày</span>
+                    </div>
+                    <div className="flex justify-between items-center">
                       <div 
                         className="flex items-center space-x-1 cursor-pointer"
                         onClick={() => setLoanTerm(40)}
@@ -325,19 +396,14 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                         <div className={`w-3 h-3 rounded-full ${loanTerm === 40 ? 'bg-primary' : 'bg-gray-300'}`}></div>
                         <span className={`text-xs ${loanTerm === 40 ? 'text-primary font-medium' : 'text-gray-600'}`}>40 ngày</span>
                       </div>
+                      <span className={`text-xs ${loanTerm === 40 ? 'text-primary font-medium' : 'text-gray-600'}`}>{formatCurrency(getDailyPayment(loanAmount[0], 40))}/ngày</span>
                     </div>
                   </div>
                 </div>
-                <div className="mt-1.5 flex justify-between items-center px-2">
-                  <span className="text-xs text-gray-600">Tùy chọn trả góp:</span>
-                  <span className="text-sm font-bold text-primary">{formatCurrency(getDailyPayment(loanAmount[0], loanTerm))}/ngày</span>
-                </div>
-                <div className="mt-1.5 flex justify-between items-center px-2 border-t border-orange-100 pt-1.5">
-                  <span className="text-xs text-gray-600">Tổng số:</span>
-                  <span className="text-sm font-bold text-primary">{formatCurrency(totalRepayment)}</span>
-                </div>
               </div>
             </div>
+            
+            <h3 className="text-foreground font-bold text-sm text-center mb-2">Thông tin đăng ký</h3>
             
             <div className="space-y-2.5">
               <div>
@@ -389,83 +455,6 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
                 <a href="/conditions" className="text-primary underline">điều kiện</a> và{" "}
                 <a href="/privacy" className="text-primary underline">Chính sách quyền riêng tư</a> được đưa ra bởi 15S.
               </label>
-            </div>
-          </div>
-          
-          {/* Hidden on mobile since we've added the summary at the top of the form */}
-          <div className="hidden">
-            {/* These components are now shown in the form summary */}
-          </div>
-
-
-          {/* Removed Payment Summary section */}
-          
-          {/* Loan Total - Desktop only */}
-          <div className="bg-white/15 rounded-md p-2 border border-white/20 hidden lg:block">
-            <div className="flex justify-between items-center">
-              <span className="text-white/80 text-xs">Tổng số:</span>
-              <span className="text-white font-bold text-base">{formatCurrency(totalRepayment)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Loan Info Section - Desktop only */}
-        <div className="space-y-3 order-2 lg:order-1 hidden lg:block">
-          {/* Loan Amount Slider - Desktop */}
-          <div className="space-y-2">
-            <Label className="text-white text-sm font-medium">Tôi cần vay tiền</Label>
-            <div className="space-y-2">
-              <div className="text-xl font-bold text-white text-center mb-2">{formatCurrency(loanAmount[0])}</div>
-              <Slider
-                value={loanAmount}
-                onValueChange={setLoanAmount}
-                max={10000000}
-                min={1000000}
-                step={500000}
-                className="w-full h-1"
-              />
-              <div className="flex justify-between text-xs text-white/70">
-                <span>1.000.000</span>
-                <span>10.000.000</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Loan Term Selection - Desktop */}
-          <div className="space-y-1">
-            <Label className="text-white text-sm font-medium">Kỳ hạn vay</Label>
-            <RadioGroup 
-              value={loanTerm.toString()} 
-              onValueChange={(value) => setLoanTerm(parseInt(value) as 30 | 40)}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="30" id="term-30" className="w-3.5 h-3.5" />
-                <Label htmlFor="term-30" className="text-white cursor-pointer text-sm">30 ngày</Label>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="40" id="term-40" className="w-3.5 h-3.5" />
-                <Label htmlFor="term-40" className="text-white cursor-pointer text-sm">40 ngày</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-
-
-          {/* Installment Options - Highlighted - Desktop only */}
-          <div className="bg-white/15 rounded-md p-3 border border-white/20 hidden lg:block">
-            <h3 className="text-white font-bold text-sm mb-2 text-center">Tùy chọn trả góp</h3>
-            <div className="space-y-1.5">
-              <div className={`text-center p-1.5 rounded-md transition-all ${loanTerm === 30 ? 'bg-white text-primary font-bold' : 'bg-white/10 text-white/80'}`}>
-                <div className="text-xs">Góp 30 ngày</div>
-                <div className="text-base font-bold">{formatCurrency(getDailyPayment(loanAmount[0], 30))}</div>
-                <div className="text-[10px]">/ngày</div>
-              </div>
-              <div className={`text-center p-1.5 rounded-md transition-all ${loanTerm === 40 ? 'bg-white text-primary font-bold' : 'bg-white/10 text-white/80'}`}>
-                <div className="text-xs">Góp 40 ngày</div>
-                <div className="text-base font-bold">{formatCurrency(getDailyPayment(loanAmount[0], 40))}</div>
-                <div className="text-[10px]">/ngày</div>
-              </div>
             </div>
           </div>
         </div>
