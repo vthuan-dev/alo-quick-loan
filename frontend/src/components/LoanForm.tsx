@@ -371,7 +371,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
               onClick={handleSubmit}
               size="sm"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-sm font-bold py-1.5"
-              disabled={!agreed || !fullName || !phone || isChecking}
+              disabled={!agreed || isChecking}
             >
               {isChecking ? "Đang kiểm tra..." : "ĐĂNG KÝ VAY"}
             </Button>
