@@ -112,7 +112,18 @@ export const AdminLoansPage = () => {
           <div className="flex flex-wrap gap-3 mb-4">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm tên, SĐT, mã hồ sơ..." className="pl-9 w-64" />
+              <Input 
+                value={query} 
+                onChange={e => {
+                  const value = e.target.value;
+                  // Chỉ cho phép tìm kiếm với chữ cái, số, và một số ký tự đặc biệt
+                  if (value === '' || /^[a-zA-Z0-9\s\u00C0-\u1EF9,.#-]*$/.test(value)) {
+                    setQuery(value);
+                  }
+                }} 
+                placeholder="Tìm tên, SĐT, mã hồ sơ..." 
+                className="pl-9 w-64" 
+              />
             </div>
             <Select value={status ?? 'ALL'} onValueChange={(v) => setStatus(v === 'ALL' ? undefined : v)}>
               <SelectTrigger className="w-56">

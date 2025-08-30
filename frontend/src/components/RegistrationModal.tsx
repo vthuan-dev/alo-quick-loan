@@ -261,17 +261,11 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
 
         <div>
           <Label htmlFor="location">Vị trí của bạn</Label>
-          <Select value={formData.location} onValueChange={(value) => handleInputChange('location', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn tỉnh/thành phố" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hanoi">Hà Nội</SelectItem>
-              <SelectItem value="hcm">TP. Hồ Chí Minh</SelectItem>
-              <SelectItem value="danang">Đà Nẵng</SelectItem>
-              <SelectItem value="haiphong">Hải Phòng</SelectItem>
-            </SelectContent>
-          </Select>
+          <Input 
+            placeholder="Nhập địa chỉ của bạn"
+            value={formData.location}
+            onChange={(e) => handleInputChange('location', e.target.value)}
+          />
         </div>
       </div>
 
@@ -332,11 +326,43 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
               <SelectValue placeholder="Chọn ngân hàng" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="vietcombank">Vietcombank</SelectItem>
+              <SelectItem value="agribank">Agribank</SelectItem>
+              <SelectItem value="abbank">ABBank</SelectItem>
+              <SelectItem value="baovietbank">BaoViet Bank</SelectItem>
+              <SelectItem value="vietcapitalbank">Viet Capital Bank</SelectItem>
+              <SelectItem value="bacabank">Bac A Bank</SelectItem>
+              <SelectItem value="vietinbank">VietinBank</SelectItem>
+              <SelectItem value="bidv">BIDV</SelectItem>
+              <SelectItem value="dongabank">DongA Bank</SelectItem>
+              <SelectItem value="seabank">SeABank</SelectItem>
+              <SelectItem value="eximbank">Eximbank</SelectItem>
+              <SelectItem value="msb">MSB</SelectItem>
+              <SelectItem value="kienlongbank">Kienlongbank</SelectItem>
               <SelectItem value="techcombank">Techcombank</SelectItem>
+              <SelectItem value="namabank">Nam A Bank</SelectItem>
+              <SelectItem value="vietcombank">Vietcombank</SelectItem>
+              <SelectItem value="hdbank">HDBank</SelectItem>
+              <SelectItem value="ocb">OCB</SelectItem>
               <SelectItem value="mbbank">MBBank</SelectItem>
-              <SelectItem value="acb">ACB</SelectItem>
+              <SelectItem value="ncb">NCB</SelectItem>
+              <SelectItem value="vib">VIB</SelectItem>
+              <SelectItem value="scb">SCB</SelectItem>
+              <SelectItem value="saigonbank">Saigonbank</SelectItem>
+              <SelectItem value="sacombank">Sacombank</SelectItem>
+              <SelectItem value="shb">SHB</SelectItem>
+              <SelectItem value="tpbank">TPBank</SelectItem>
+              <SelectItem value="vietabank">VietABank</SelectItem>
               <SelectItem value="vpbank">VPBank</SelectItem>
+              <SelectItem value="acb">ACB</SelectItem>
+              <SelectItem value="shinhanbank">Shinhan Bank</SelectItem>
+              <SelectItem value="standardchartered">Standard Chartered</SelectItem>
+              <SelectItem value="hsbc">HSBC</SelectItem>
+              <SelectItem value="uob">UOB</SelectItem>
+              <SelectItem value="cimbbank">CIMB</SelectItem>
+              <SelectItem value="wooribank">Woori Bank</SelectItem>
+              <SelectItem value="publicbank">Public Bank</SelectItem>
+              <SelectItem value="indovina">Indovina Bank</SelectItem>
+              <SelectItem value="vrbank">Viet-Nga Bank (VRB)</SelectItem>
             </SelectContent>
           </Select>
         </div>

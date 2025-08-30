@@ -18,7 +18,9 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
   const [loanAmount, setLoanAmount] = useState([4500000]);
   const [loanTerm, setLoanTerm] = useState<30 | 40>(30);
   const [fullName, setFullName] = useState("");
+  const [fullNameError, setFullNameError] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const { showError, showSuccess, showInfo } = useToast();
@@ -408,26 +410,46 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
             <div className="space-y-2.5">
               <div>
                 <Label htmlFor="fullName" className="text-foreground font-medium text-xs">Họ và tên</Label>
+                {fullNameError && <p className="text-xs text-red-500 mt-1">{fullNameError}</p>}
                 <Input
                   type="text"
                   id="fullName"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFullName(value);
+                    if (value && !/^[\p{L} .'-]+$/u.test(value)) {
+                      setFullNameError("Họ tên không hợp lệ");
+                    } else {
+                      setFullNameError("");
+                    }
+                  }}
                   className={`mt-0.5 relative z-10 pointer-events-auto text-black placeholder:text-gray-400 h-8 text-xs ${canRepeatLoan ? 'bg-gray-100' : ''}`}
                   placeholder="Nhập họ và tên của bạn"
+                  aria-invalid={fullNameError ? "true" : "false"}
                   disabled={canRepeatLoan}
                 />
               </div>
 
               <div>
                 <Label htmlFor="phone" className="text-foreground font-medium text-xs">Số điện thoại của bạn</Label>
+                {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
                 <Input
                   type="tel"
                   id="phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPhone(value);
+                    if (value && !/^(0|\+84|84)(3|5|7|8|9)\d{8}$/.test(value.replace(/\s+/g, ''))) {
+                      setPhoneError("Số điện thoại không hợp lệ");
+                    } else {
+                      setPhoneError("");
+                    }
+                  }}
                   className={`mt-0.5 relative z-10 pointer-events-auto text-black placeholder:text-gray-400 h-8 text-xs ${canRepeatLoan ? 'bg-gray-100' : ''}`}
                   placeholder="Nhập số điện thoại"
+                  aria-invalid={phoneError ? "true" : "false"}
                   disabled={canRepeatLoan}
                 />
               </div>
@@ -437,7 +459,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
               onClick={handleSubmit}
               size="sm"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-sm font-bold py-1.5"
-              disabled={!agreed || isChecking}
+              disabled={!agreed || isChecking || !!fullNameError || !!phoneError || (!canRepeatLoan && (!fullName || !phone))}
             >
               {isChecking ? "Đang kiểm tra..." : "ĐĂNG KÝ VAY"}
             </Button>
