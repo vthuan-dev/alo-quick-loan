@@ -2,6 +2,7 @@ import { ToastContainer } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./utils/keepAlive"; // Import keep-alive service
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoanManagement from "./pages/LoanManagement";
@@ -22,6 +23,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Complaints from "./pages/Complaints";
 import News from "./pages/News";
+import { KeepAliveStatus } from "./components/KeepAliveStatus";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +57,7 @@ const AppContent = () => {
   return (
     <TooltipProvider>
       <ToastContainer toasts={toasts} onClose={dismiss} />
+      <KeepAliveStatus />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={

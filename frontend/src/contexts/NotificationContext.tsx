@@ -181,7 +181,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   useEffect(() => {
     // Initialize WebSocket connection
     const initializeSocket = () => {
-      const newSocket = io('http://localhost:3000/admin', {
+      const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3000';
+      const newSocket = io(`${wsUrl}/admin`, {
         transports: ['websocket', 'polling'],
         timeout: 20000,
         forceNew: true,
