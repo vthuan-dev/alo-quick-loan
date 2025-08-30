@@ -84,8 +84,8 @@ export const ALOHeader = () => {
         </div>
       </div>
       
-      {/* Main Header */}
-      <div className="container mx-auto px-4 py-3">
+             {/* Main Header */}
+       <div className="container mx-auto px-4 py-5">
                  <div className="flex items-center justify-between relative">
            {/* Mobile: Hamburger Menu */}
            <div className="md:hidden">
