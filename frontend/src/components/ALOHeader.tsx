@@ -127,10 +127,10 @@ export const ALOHeader = () => {
               onClick={handleLogoClick}
               title="Click để về trang chủ"
             >
-              <h1 className="text-2xl font-bold">
+              <h1 className="text-4xl font-bold">
                 <span className="text-red-500">15</span><span className="text-green-700">S</span>
               </h1>
-              <p className="text-xs text-gray-600">Trả góp liền tay</p>
+              <p className="text-base text-gray-600">Trả góp liền tay</p>
             </div>
           </div>
 
