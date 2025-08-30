@@ -4,6 +4,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { MobileAdminNav } from '@/components/admin/MobileAdminNav';
 import { useAuthContext } from '@/App';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 export const AdminLayout = () => {
   const { user, isAuthenticated, isLoading } = useAuthContext();
@@ -38,26 +39,28 @@ export const AdminLayout = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center bg-white border-b border-gray-200">
-        <div className="flex md:hidden items-center">
-          <MobileAdminNav />
+    <NotificationProvider>
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Header */}
+        <div className="flex items-center bg-white border-b border-gray-200">
+          <div className="flex md:hidden items-center">
+            <MobileAdminNav />
+          </div>
+          <div className="flex-1">
+            <AdminHeader />
+          </div>
         </div>
-        <div className="flex-1">
-          <AdminHeader />
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <AdminSidebar />
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <Outlet />
+          </main>
         </div>
       </div>
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <AdminSidebar />
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    </NotificationProvider>
   );
 };

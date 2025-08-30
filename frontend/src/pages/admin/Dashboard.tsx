@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoanDetailModal } from '@/components/admin/LoanDetailModal';
 import { useToast } from '@/contexts/ToastContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { api, AdminDashboardStats, AdminRecentLoan } from '@/lib/api';
 import { 
   DollarSign, 
@@ -27,10 +28,25 @@ export const AdminDashboard = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const { showError } = useToast();
+  const { notifications, pendingLoanCount } = useNotifications();
 
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  // Update dashboard when new notifications arrive
+  useEffect(() => {
+    const newLoanNotifications = notifications.filter(n => 
+      n.type === 'NEW_LOAN_APPLICATION' && 
+      !n.isRead &&
+      new Date(n.timestamp).getTime() > Date.now() - 60000 // Last minute
+    );
+
+    if (newLoanNotifications.length > 0) {
+      // Refresh dashboard data when new loan applications arrive
+      loadDashboardData();
+    }
+  }, [notifications]);
 
   const loadDashboardData = async () => {
     try {
@@ -165,9 +181,11 @@ export const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-1">
-              {stats?.pendingLoans || 0}
+              {pendingLoanCount > 0 ? pendingLoanCount : (stats?.pendingLoans || 0)}
             </div>
-            <p className="text-xs opacity-90">Cần xử lý</p>
+            <p className="text-xs opacity-90">
+              {pendingLoanCount > 0 ? 'Có mới' : 'Cần xử lý'}
+            </p>
           </CardContent>
         </Card>
 

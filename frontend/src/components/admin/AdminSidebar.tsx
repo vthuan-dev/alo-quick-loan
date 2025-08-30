@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/App';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { 
   LayoutDashboard,
   FileText,
@@ -28,6 +29,7 @@ export const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
+  const { pendingLoanCount } = useNotifications();
   const [stats, setStats] = React.useState<AdminDashboardStats | null>(null);
 
   React.useEffect(() => {
@@ -65,7 +67,7 @@ export const AdminSidebar = () => {
       href: '/admin/loans',
       icon: FileText,
       permission: 'loan:read',
-      badge: stats ? String((stats as any).pendingLoans ?? 0) : undefined
+      badge: pendingLoanCount > 0 ? String(pendingLoanCount) : undefined
     },
     {
       label: 'Quản lý khách hàng',

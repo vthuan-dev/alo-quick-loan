@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TwilioModule } from './modules/twilio/twilio.module';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AdminModule } from './modules/admin/admin.module';
     TwilioModule,
     FirebaseModule,
     AdminModule,
+    WebSocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,17 +10,24 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { useAuthContext } from '@/App';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { 
   User, 
   Settings, 
   LogOut, 
   Bell,
-  Search
+  Search,
+  Check,
+  CheckCheck,
+  FileText,
+  Clock
 } from 'lucide-react';
 
 export const AdminHeader = () => {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -35,6 +42,28 @@ export const AdminHeader = () => {
       'SUPPORT': 'Support Staff'
     };
     return roleNames[role] || role;
+  };
+
+  const formatNotificationTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Vừa xong';
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} giờ trước`;
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'NEW_LOAN_APPLICATION':
+        return <FileText className="w-4 h-4 text-blue-500" />;
+      case 'LOAN_STATUS_UPDATE':
+        return <Clock className="w-4 h-4 text-orange-500" />;
+      default:
+        return <Bell className="w-4 h-4 text-gray-500" />;
+    }
   };
 
   return (
@@ -70,12 +99,91 @@ export const AdminHeader = () => {
         {/* Right Side - Notifications and User Menu */}
         <div className="flex items-center space-x-2 md:space-x-4">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              3
-            </span>
-          </Button>
+          <DropdownMenu open={notificationOpen} onOpenChange={setNotificationOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Thông báo</span>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => markAllAsRead()}
+                    className="h-6 px-2 text-xs"
+                  >
+                    <CheckCheck className="w-3 h-3 mr-1" />
+                    Đọc tất cả
+                  </Button>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  Không có thông báo nào
+                </div>
+              ) : (
+                notifications.slice(0, 10).map((notification) => (
+                  <DropdownMenuItem
+                    key={notification.id}
+                    className={`p-3 cursor-pointer ${!notification.isRead ? 'bg-blue-50' : ''}`}
+                    onClick={() => {
+                      if (!notification.isRead) {
+                        markAsRead(notification.id);
+                      }
+                      setNotificationOpen(false);
+                    }}
+                  >
+                    <div className="flex items-start space-x-3 w-full">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className={`text-sm font-medium ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                            {notification.title}
+                          </p>
+                          {!notification.isRead && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {formatNotificationTime(notification.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                ))
+              )}
+              
+              {notifications.length > 10 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate('/admin/notifications');
+                      setNotificationOpen(false);
+                    }}
+                    className="text-center justify-center"
+                  >
+                    Xem tất cả thông báo
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* User Menu */}
           <DropdownMenu>

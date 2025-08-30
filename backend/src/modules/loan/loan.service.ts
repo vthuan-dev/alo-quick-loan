@@ -10,6 +10,7 @@ import { QueryLoanDto } from './dto/query-loan.dto';
 import { NotificationService } from '../notification/notification.service';
 import { LoanStatus } from './enums/loan-status.enum';
 import { LoanCalculator } from './utils/loan-calculator';
+import { AdminWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class LoanService {
@@ -19,6 +20,7 @@ export class LoanService {
     @InjectModel(LoanApplication.name)
     private loanModel: Model<LoanApplicationDocument>,
     private notificationService: NotificationService,
+    private webSocketGateway: AdminWebSocketGateway,
   ) {}
 
   async step1(dto: LoanStep1Dto): Promise<LoanStep1ResponseDto> {
@@ -67,6 +69,22 @@ export class LoanService {
     await loanApplication.save();
 
     this.logger.log(`Created new loan application: ${loanApplication.loanApplicationId}`);
+
+    // Emit WebSocket notification for new loan application
+    try {
+      this.webSocketGateway.emitNewLoanApplication({
+        loanApplicationId: loanApplication.loanApplicationId,
+        fullName: loanApplication.fullName,
+        phoneNumber: loanApplication.phoneNumber,
+        loanAmount: loanApplication.loanAmount!,
+        loanTerm: loanApplication.loanTerm!,
+        status: loanApplication.status,
+        createdAt: loanApplication.createdAt?.toISOString() || new Date().toISOString(),
+      });
+      this.logger.log(`WebSocket notification sent for loan: ${loanApplication.loanApplicationId}`);
+    } catch (error) {
+      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
+    }
 
     return {
       loanApplicationId: loanApplication.loanApplicationId,

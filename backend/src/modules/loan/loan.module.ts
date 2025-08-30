@@ -7,6 +7,7 @@ import { AdminLoanService } from './admin-loan.service';
 import { ClientLoanController } from './client-loan.controller';
 import { LoanApplication, LoanApplicationSchema } from './schemas/loan-application.schema';
 import { NotificationModule } from '../notification/notification.module';
+import { WebSocketModule } from '../websocket/websocket.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationModule } from '../notification/notification.module';
       { name: LoanApplication.name, schema: LoanApplicationSchema },
     ]),
     NotificationModule,
+    WebSocketModule,
   ],
   controllers: [LoanController, AdminLoanController, ClientLoanController],
   providers: [LoanService, AdminLoanService],
