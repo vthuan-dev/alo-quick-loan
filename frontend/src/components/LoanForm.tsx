@@ -398,43 +398,7 @@ export const LoanForm = ({ onSubmit }: LoanFormProps) => {
           </div>
 
 
-          {/* Payment Summary */}
-          <div className="bg-white/15 rounded-md p-3 border border-white/20">
-            <h3 className="text-white font-bold text-sm mb-2 text-center">Tổng quan khoản vay</h3>
-            
-            {/* Key Payment Info */}
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <div className="text-center">
-                <Label className="text-white/70 text-[10px]">Ngày thanh toán đầu tiên</Label>
-                <p className="text-white font-bold text-sm">{firstPaymentDate}</p>
-              </div>
-              <div className="text-center">
-                <Label className="text-white/70 text-[10px]">Số tiền mỗi ngày</Label>
-                <p className="text-white font-bold text-sm">{formatCurrency(currentDailyPayment)}</p>
-              </div>
-            </div>
-
-            {/* Detailed Breakdown */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[10px]">
-                <span className="text-white/70">Số tiền vay:</span>
-                <span className="text-white font-semibold">{formatCurrency(loanAmount[0])}</span>
-              </div>
-              <div className="flex justify-between text-[10px]">
-                <span className="text-white/70">Lãi suất:</span>
-                <span className="text-white font-semibold">{interestRate.toFixed(1)}%</span>
-              </div>
-              <div className="flex justify-between text-[10px]">
-                <span className="text-white/70">Tổng lãi:</span>
-                <span className="text-white font-semibold">{formatCurrency(totalInterest)}</span>
-              </div>
-              <hr className="border-white/20" />
-              <div className="flex justify-between text-sm font-bold">
-                <span className="text-white">Tổng trả:</span>
-                <span className="text-white">{formatCurrency(totalRepayment)}</span>
-              </div>
-            </div>
-          </div>
+          {/* Removed Payment Summary section */}
           
           {/* Loan Total - Desktop only */}
           <div className="bg-white/15 rounded-md p-2 border border-white/20 hidden lg:block">
