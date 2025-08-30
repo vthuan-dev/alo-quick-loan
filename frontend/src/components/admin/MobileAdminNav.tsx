@@ -68,30 +68,31 @@ export const MobileAdminNav = () => {
       permission: 'loan:read',
       badge: pendingLoanCount > 0 ? String(pendingLoanCount) : undefined
     },
-    {
-      label: 'Quản lý khách hàng',
-      href: '/admin/customers',
-      icon: Users,
-      permission: 'customer:read',
-    },
-    {
-      label: 'Báo cáo & Thống kê',
-      href: '/admin/reports',
-      icon: BarChart3,
-      permission: 'loan:read',
-    },
-    {
-      label: 'Quản lý admin',
-      href: '/admin/admins',
-      icon: Shield,
-      permission: 'admin:read',
-    },
-    {
-      label: 'Cài đặt hệ thống',
-      href: '/admin/settings',
-      icon: Settings,
-      permission: 'admin:write',
-    },
+    // Ẩn 4 chức năng cuối
+    // {
+    //   label: 'Quản lý khách hàng',
+    //   href: '/admin/customers',
+    //   icon: Users,
+    //   permission: 'customer:read',
+    // },
+    // {
+    //   label: 'Báo cáo & Thống kê',
+    //   href: '/admin/reports',
+    //   icon: BarChart3,
+    //   permission: 'loan:read',
+    // },
+    // {
+    //   label: 'Quản lý admin',
+    //   href: '/admin/admins',
+    //   icon: Shield,
+    //   permission: 'admin:read',
+    // },
+    // {
+    //   label: 'Cài đặt hệ thống',
+    //   href: '/admin/settings',
+    //   icon: Settings,
+    //   permission: 'admin:write',
+    // },
   ];
 
   const filteredNavItems = navItems.filter(item => 

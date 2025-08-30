@@ -17,10 +17,12 @@ interface NotificationContextType {
   pendingLoanCount: number;
   socket: Socket | null;
   isConnected: boolean;
+  soundEnabled: boolean;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;
   addNotification: (notification: Omit<Notification, 'id' | 'isRead'>) => void;
   clearNotifications: () => void;
+  toggleSound: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -33,6 +35,140 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    // Lấy setting từ localStorage, mặc định là true
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('notificationSoundEnabled');
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  // Hàm toggle âm thanh thông báo
+  const toggleSound = () => {
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    localStorage.setItem('notificationSoundEnabled', JSON.stringify(newValue));
+  };
+
+  // Hàm phát âm thanh thông báo cho loan mới
+  const playNotificationSound = () => {
+    if (!soundEnabled) return; // Không phát âm thanh nếu đã tắt
+    
+    console.log('🔊 Attempting to play notification sound...');
+    
+    // Thử đường dẫn chính
+    const audio = new Audio('/sounds/notification.mp3');
+    audio.volume = 0.7;
+    
+    // Debug events
+    audio.addEventListener('loadstart', () => console.log('📥 Loading started'));
+    audio.addEventListener('canplay', () => console.log('✅ Can play'));
+    audio.addEventListener('canplaythrough', () => console.log('✅ Can play through'));
+    audio.addEventListener('error', (e) => {
+      console.log('❌ Error loading sound:', e);
+      console.log('🔄 Using fallback sound');
+      playFallbackSound();
+    });
+    
+    // Thử phát âm thanh
+    audio.play().then(() => {
+      console.log('🎉 Successfully played notification sound');
+    }).catch((error) => {
+      console.log('❌ Failed to play sound:', error);
+      console.log('🔄 Using fallback sound');
+      playFallbackSound();
+    });
+  };
+
+  // Fallback: tạo âm thanh bằng Web Audio API nếu file không có
+  const playFallbackSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+      
+      setTimeout(() => {
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        
+        oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime);
+        oscillator2.type = 'sine';
+        
+        gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode2.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05);
+        gainNode2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.15);
+        
+        oscillator2.start(audioContext.currentTime);
+        oscillator2.stop(audioContext.currentTime + 0.15);
+      }, 200);
+      
+    } catch (error) {
+      console.log('Fallback sound also failed:', error);
+    }
+  };
+
+  // Hàm phát âm thanh thông báo cho status update (âm thanh khác)
+  const playStatusUpdateSound = () => {
+    if (!soundEnabled) return; // Không phát âm thanh nếu đã tắt
+    
+    try {
+      // Sử dụng file âm thanh tùy chỉnh cho status update (có thể dùng file khác)
+      const audio = new Audio('/sounds/notification.mp3'); // Có thể thay bằng file khác
+      audio.volume = 0.5; // Volume thấp hơn cho status update
+      audio.play().catch((error) => {
+        console.log('Could not play status update sound file:', error);
+        // Fallback: tạo âm thanh ngắn bằng Web Audio API
+        playStatusUpdateFallbackSound();
+      });
+    } catch (error) {
+      console.log('Error loading status update sound:', error);
+      playStatusUpdateFallbackSound();
+    }
+  };
+
+  // Fallback cho status update sound
+  const playStatusUpdateFallbackSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+      
+    } catch (error) {
+      console.log('Status update fallback sound also failed:', error);
+    }
+  };
 
   // Calculate unread count
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -84,6 +220,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         };
 
         addNotification(notification);
+        
+        // Phát âm thanh thông báo
+        playNotificationSound();
       });
 
       // Listen for loan status updates
@@ -101,6 +240,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         };
 
         addNotification(notification);
+        
+        // Phát âm thanh thông báo status update
+        playStatusUpdateSound();
       });
 
       // Listen for admin connection events
@@ -166,10 +308,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     pendingLoanCount,
     socket,
     isConnected,
+    soundEnabled,
     markAsRead,
     markAllAsRead,
     addNotification,
     clearNotifications,
+    toggleSound,
   };
 
   return (
@@ -179,12 +323,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   );
 };
 
-const useNotifications = (): NotificationContextType => {
+export function useNotifications(): NotificationContextType {
   const context = useContext(NotificationContext);
   if (context === undefined) {
     throw new Error('useNotifications must be used within a NotificationProvider');
   }
   return context;
-};
-
-export { useNotifications };
+}

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { api, LoanApplication } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
-import { Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 interface LoanDetailModalProps {
   open: boolean;
@@ -44,6 +45,26 @@ export const LoanDetailModal: React.FC<LoanDetailModalProps> = ({ open, onOpenCh
 
   const { label, color, Icon } = statusInfo(loan?.status);
 
+  // Hàm kiểm tra độ đầy đủ của hồ sơ
+  const getProfileCompleteness = (loan: LoanApplication) => {
+    const step1Complete = !!(loan.fullName && loan.phoneNumber && loan.loanAmount && loan.loanTerm);
+    const step2Complete = !!(loan.gender && loan.dob && loan.identityNumber && loan.phoneBrand && loan.location);
+    const step3Complete = !!(loan.relativePhone && loan.companyPhone && loan.bankAccount && loan.bankName);
+
+    const completedSteps = [step1Complete, step2Complete, step3Complete].filter(Boolean).length;
+    
+    return {
+      completedSteps,
+      totalSteps: 3,
+      isComplete: completedSteps === 3,
+      step1Complete,
+      step2Complete,
+      step3Complete
+    };
+  };
+
+  const profileInfo = loan ? getProfileCompleteness(loan) : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -57,6 +78,35 @@ export const LoanDetailModal: React.FC<LoanDetailModalProps> = ({ open, onOpenCh
           </div>
         ) : loan ? (
           <div className="space-y-6">
+            {/* Alert thông báo độ đầy đủ hồ sơ */}
+            {profileInfo && (
+              <Alert className={profileInfo.isComplete ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
+                {profileInfo.isComplete ? (
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                )}
+                <AlertDescription className={profileInfo.isComplete ? "text-green-800" : "text-yellow-800"}>
+                  {profileInfo.isComplete ? (
+                    <div>
+                      <strong>✅ Hồ sơ đầy đủ</strong>
+                      <p className="text-sm mt-1">Khách hàng đã hoàn thành đủ 3 bước đăng ký</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <strong>⚠️ Hồ sơ chưa đầy đủ</strong>
+                      <p className="text-sm mt-1">
+                        Khách hàng chỉ hoàn thành {profileInfo.completedSteps}/3 bước:
+                        {!profileInfo.step1Complete && " Thiếu thông tin cơ bản"}
+                        {!profileInfo.step2Complete && " Thiếu thông tin cá nhân"}
+                        {!profileInfo.step3Complete && " Thiếu thông tin liên hệ & ngân hàng"}
+                      </p>
+                    </div>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground">Mã hồ sơ</p>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoanDetailModal } from '@/components/admin/LoanDetailModal';
+import { ExportReportModal } from '@/components/admin/ExportReportModal';
 import { useToast } from '@/contexts/ToastContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { api, AdminDashboardStats, AdminRecentLoan } from '@/lib/api';
@@ -27,6 +28,7 @@ export const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const { showError } = useToast();
   const { notifications, pendingLoanCount } = useNotifications();
 
@@ -148,14 +150,14 @@ export const AdminDashboard = () => {
           <p className="text-gray-600">Tổng quan hệ thống quản lý khoản vay</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setExportModalOpen(true)}>
             <Download className="w-4 h-4 mr-2" />
             Xuất báo cáo
           </Button>
-          <Button>
+          {/* <Button>
             <Eye className="w-4 h-4 mr-2" />
             Xem chi tiết
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -303,6 +305,7 @@ export const AdminDashboard = () => {
         </CardContent>
       </Card>
       <LoanDetailModal open={detailOpen} onOpenChange={setDetailOpen} loanId={selectedLoanId} />
+      <ExportReportModal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} />
     </div>
   );
 };

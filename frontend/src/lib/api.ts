@@ -394,6 +394,36 @@ export const api = {
     return response.json();
   },
 
+  async getAdminLoansForExport(token: string, startDate?: string, endDate?: string): Promise<LoanApplication[]> {
+    const queryParams = new URLSearchParams();
+    if (startDate) queryParams.append('startDate', startDate);
+    if (endDate) queryParams.append('endDate', endDate);
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/loans/export?${queryParams}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-admin-api-key': ADMIN_API_KEY,
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch loans for export');
+    }
+    
+    const data = await response.json();
+    
+    // Xử lý response có thể là array hoặc object với field loans
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && typeof data === 'object' && data.loans) {
+      return data.loans;
+    } else {
+      return [];
+    }
+  },
+
   async getAdminLoanById(token: string, id: string): Promise<LoanApplication> {
     const response = await fetch(`${API_BASE_URL}/api/admin/loans/${id}`, {
       headers: {

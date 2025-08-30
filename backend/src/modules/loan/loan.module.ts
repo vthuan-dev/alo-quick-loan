@@ -17,7 +17,7 @@ import { WebSocketModule } from '../websocket/websocket.module';
     NotificationModule,
     WebSocketModule,
   ],
-  controllers: [LoanController, AdminLoanController, ClientLoanController],
+  controllers: [LoanController, ClientLoanController], // Removed AdminLoanController to avoid route conflicts
   providers: [LoanService, AdminLoanService],
   exports: [LoanService, AdminLoanService],
 })

@@ -28,7 +28,7 @@ import {
   AssignLoanDto,
   AdminUpdateLoanDto,
   DashboardStatsDto,
-  ExportLoansDto,
+  // ExportLoansDto, // Removed to avoid conflicts
 } from './dto/admin-loan.dto';
 import { AdminAuthGuard } from '../../common/guards/admin-auth.guard';
 import { LoanApplication } from './schemas/loan-application.schema';
@@ -79,18 +79,19 @@ export class AdminLoanController {
     return this.adminLoanService.searchApplications(searchTerm);
   }
 
-  @Get('export')
-  @ApiOperation({ summary: 'Export loan applications' })
-  @ApiQuery({ type: ExportLoansDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Export data',
-  })
-  async exportApplications(
-    @Query(new ValidationPipe({ transform: true })) query: ExportLoansDto,
-  ) {
-    return this.adminLoanService.exportApplications(query);
-  }
+  // Export endpoint moved to admin.controller.ts to avoid conflicts
+  // @Get('export')
+  // @ApiOperation({ summary: 'Export loan applications' })
+  // @ApiQuery({ type: ExportLoansDto })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Export data',
+  // })
+  // async exportApplications(
+  //   @Query(new ValidationPipe({ transform: true })) query: ExportLoansDto,
+  // ) {
+  //   return this.adminLoanService.exportApplications(query);
+  // }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single loan application' })

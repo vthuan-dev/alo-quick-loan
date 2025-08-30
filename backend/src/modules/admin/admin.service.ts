@@ -277,6 +277,36 @@ export class AdminService {
     };
   }
 
+  async exportLoans(filterDto: LoanFilterDto): Promise<any[]> {
+    const { status, phoneNumber, fullName, startDate, endDate } = filterDto;
+    
+    const filter: any = {};
+    
+    if (status) filter.status = status;
+    if (phoneNumber) filter.phoneNumber = { $regex: phoneNumber, $options: 'i' };
+    if (fullName) filter.fullName = { $regex: fullName, $options: 'i' };
+    
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        // Set start time to beginning of day in UTC
+        const startDateTime = new Date(startDate + 'T00:00:00.000Z');
+        filter.createdAt.$gte = startDateTime;
+      }
+      if (endDate) {
+        // Set end time to end of day in UTC
+        const endDateTime = new Date(endDate + 'T23:59:59.999Z');
+        filter.createdAt.$lte = endDateTime;
+      }
+    }
+
+    const loans = await this.loanModel
+      .find(filter)
+      .sort({ createdAt: -1 as any });
+
+    return loans;
+  }
+
   // Helper methods
   private getDefaultPermissions(role: string): string[] {
     const permissions = {

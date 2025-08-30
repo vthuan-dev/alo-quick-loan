@@ -73,6 +73,16 @@ export class AdminController {
     return this.adminService.getAllLoans(filterDto);
   }
 
+  // Export loans for report - MUST be before :id route
+  @Get('loans/export')
+  @UseGuards(AdminAuthGuard)
+  async exportLoans(@Query() filterDto: LoanFilterDto, @Request() req) {
+    if (!req.user.permissions.includes('*') && !req.user.permissions.includes('loan:read')) {
+      throw new Error('Insufficient permissions');
+    }
+    return this.adminService.exportLoans(filterDto);
+  }
+
   @Get('loans/:id')
   @UseGuards(AdminAuthGuard)
   async getLoanById(@Param('id') id: string, @Request() req) {
@@ -134,4 +144,5 @@ export class AdminController {
       },
     };
   }
+
 }

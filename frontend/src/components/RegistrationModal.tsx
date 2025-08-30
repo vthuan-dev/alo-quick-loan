@@ -35,45 +35,58 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
 
   // Kiểm tra step hiện tại từ localStorage khi modal mở
   React.useEffect(() => {
-    if (isOpen && loanApplicationId) {
-      const existingStep = localStorage.getItem('existingApplicationStep');
-      if (existingStep) {
-        const stepNumber = parseInt(existingStep);
-        if (stepNumber > 1 && stepNumber <= 3) {
-          setStep(stepNumber);
-        }
+    if (isOpen) {
+      // Lấy loanApplicationId mới nhất từ localStorage
+      const currentLoanId = localStorage.getItem('loanApplicationId');
+      if (currentLoanId && currentLoanId !== loanApplicationId) {
+        setLoanApplicationId(currentLoanId);
       }
-      // Load thông tin đã có từ localStorage
-      loadFormData();
+      
+      if (currentLoanId) {
+        const existingStep = localStorage.getItem('existingApplicationStep');
+        if (existingStep) {
+          const stepNumber = parseInt(existingStep);
+          if (stepNumber > 1 && stepNumber <= 3) {
+            setStep(stepNumber);
+          }
+        }
+        // Load thông tin đã có từ localStorage
+        loadFormData();
+      }
     }
   }, [isOpen, loanApplicationId]);
 
   // Load thông tin form từ localStorage
   const loadFormData = () => {
-    const savedData = localStorage.getItem(`formData_${loanApplicationId}`);
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        setFormData(prev => ({ ...prev, ...parsedData }));
-      } catch (e) {
-        console.error('Error loading form data:', e);
+    const currentLoanId = localStorage.getItem('loanApplicationId');
+    if (currentLoanId) {
+      const savedData = localStorage.getItem(`formData_${currentLoanId}`);
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          setFormData(prev => ({ ...prev, ...parsedData }));
+        } catch (e) {
+          console.error('Error loading form data:', e);
+        }
       }
     }
   };
 
   // Save thông tin form vào localStorage
   const saveFormData = () => {
-    if (loanApplicationId) {
-      localStorage.setItem(`formData_${loanApplicationId}`, JSON.stringify(formData));
+    const currentLoanId = localStorage.getItem('loanApplicationId');
+    if (currentLoanId) {
+      localStorage.setItem(`formData_${currentLoanId}`, JSON.stringify(formData));
     }
   };
 
   // Auto-save khi form thay đổi
   React.useEffect(() => {
-    if (loanApplicationId) {
+    const currentLoanId = localStorage.getItem('loanApplicationId');
+    if (currentLoanId) {
       saveFormData();
     }
-  }, [formData, loanApplicationId]);
+  }, [formData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -87,24 +100,30 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         return;
       }
       
-      if (loanApplicationId) {
-        try {
-          setIsLoading(true);
-          await api.step2({
-            loanApplicationId,
-            gender: (formData.gender === 'male' ? 'MALE' : formData.gender === 'female' ? 'FEMALE' : 'OTHER') as Gender,
-            dob: formData.birthDate,
-            identityNumber: formData.cccdNumber,
-            phoneBrand: formData.phoneInUse || formData.iphoneModel || 'Unknown',
-            location: formData.location,
-          });
-          setStep(2);
-          localStorage.setItem('existingApplicationStep', '2');
-        } catch (e) {
-          alert('Vui lòng kiểm tra lại thông tin bước 1.');
-        } finally {
-          setIsLoading(false);
-        }
+      // Lấy loanApplicationId mới nhất từ localStorage
+      const currentLoanId = localStorage.getItem('loanApplicationId');
+      if (!currentLoanId) {
+        alert('Không tìm thấy thông tin hồ sơ vay. Vui lòng thử lại.');
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        await api.step2({
+          loanApplicationId: currentLoanId,
+          gender: (formData.gender === 'male' ? 'MALE' : formData.gender === 'female' ? 'FEMALE' : 'OTHER') as Gender,
+          dob: formData.birthDate,
+          identityNumber: formData.cccdNumber,
+          phoneBrand: formData.phoneInUse || formData.iphoneModel || 'Unknown',
+          location: formData.location,
+        });
+        setStep(2);
+        localStorage.setItem('existingApplicationStep', '2');
+      } catch (e) {
+        console.error('Step 2 error:', e);
+        alert('Vui lòng kiểm tra lại thông tin bước 1.');
+      } finally {
+        setIsLoading(false);
       }
       return;
     }
@@ -116,23 +135,29 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         return;
       }
       
-      if (loanApplicationId) {
-        try {
-          setIsLoading(true);
-          await api.step3({
-            loanApplicationId,
-            relativePhone: formData.relativePhone,
-            companyPhone: formData.employerPhone,
-            bankAccount: formData.bankAccount,
-            bankName: formData.bankName,
-          });
-          setStep(3);
-          localStorage.setItem('existingApplicationStep', '3');
-        } catch (e) {
-          alert('Vui lòng kiểm tra lại thông tin bước 2.');
-        } finally {
-          setIsLoading(false);
-        }
+      // Lấy loanApplicationId mới nhất từ localStorage
+      const currentLoanId = localStorage.getItem('loanApplicationId');
+      if (!currentLoanId) {
+        alert('Không tìm thấy thông tin hồ sơ vay. Vui lòng thử lại.');
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        await api.step3({
+          loanApplicationId: currentLoanId,
+          relativePhone: formData.relativePhone,
+          companyPhone: formData.employerPhone,
+          bankAccount: formData.bankAccount,
+          bankName: formData.bankName,
+        });
+        setStep(3);
+        localStorage.setItem('existingApplicationStep', '3');
+      } catch (e) {
+        console.error('Step 3 error:', e);
+        alert('Vui lòng kiểm tra lại thông tin bước 2.');
+      } finally {
+        setIsLoading(false);
       }
       return;
     }
@@ -270,7 +295,12 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
       </div>
 
       <div className="flex justify-end mt-6">
-        <Button onClick={handleNext} disabled={isLoading}>
+        <Button 
+          onClick={handleNext} 
+          disabled={isLoading}
+          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
+          size="lg"
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -368,12 +398,22 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         </div>
       </div>
 
-      <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={handleBack}>
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between mt-6">
+        <Button 
+          variant="outline" 
+          onClick={handleBack}
+          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
+          size="lg"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
         </Button>
-        <Button onClick={handleNext} disabled={isLoading}>
+        <Button 
+          onClick={handleNext} 
+          disabled={isLoading}
+          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
+          size="lg"
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -410,8 +450,9 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
     setStep(1);
     
     // Xóa dữ liệu từ localStorage
-    if (loanApplicationId) {
-      localStorage.removeItem(`formData_${loanApplicationId}`);
+    const currentLoanId = localStorage.getItem('loanApplicationId');
+    if (currentLoanId) {
+      localStorage.removeItem(`formData_${currentLoanId}`);
       localStorage.removeItem('existingApplicationStep');
     }
     
@@ -450,7 +491,7 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
         handleComplete();
       }
     }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-0">
         <DialogHeader>
           <div className="text-center mb-4">
             <div className="flex items-center justify-center space-x-2 mb-2">

@@ -257,48 +257,49 @@ export class AdminLoanService {
     );
   }
 
-  async exportApplications(dto: ExportLoansDto) {
-    const filter: any = {};
-    
-    if (dto.status) filter.status = dto.status;
-    if (dto.startDate || dto.endDate) {
-      filter.createdAt = {};
-      if (dto.startDate) filter.createdAt.$gte = new Date(dto.startDate);
-      if (dto.endDate) filter.createdAt.$lte = new Date(dto.endDate);
-    }
+  // Export method moved to admin.service.ts to avoid conflicts
+  // async exportApplications(dto: ExportLoansDto) {
+  //   const filter: any = {};
+  //   
+  //   if (dto.status) filter.status = dto.status;
+  //   if (dto.startDate || dto.endDate) {
+  //     filter.createdAt = {};
+  //     if (dto.startDate) filter.createdAt.$gte = new Date(dto.startDate);
+  //     if (dto.endDate) filter.createdAt.$lte = new Date(dto.endDate);
+  //   }
 
-    const applications = await this.loanModel
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .exec();
+  //   const applications = await this.loanModel
+  //     .find(filter)
+  //     .sort({ createdAt: -1 })
+  //     .exec();
 
-    // Transform data for export
-    const exportData = applications.map(app => ({
-      'Application ID': app.loanApplicationId,
-      'Full Name': app.fullName,
-      'Phone Number': app.phoneNumber,
-      'Loan Amount': app.loanAmount,
-      'Loan Term': app.loanTerm,
-      'Daily Payment': app.dailyPayment,
-      'Status': app.status,
-      'Identity Number': app.identityNumber || '',
-      'Date of Birth': app.dob ? moment(app.dob).format('YYYY-MM-DD') : '',
-      'Gender': app.gender || '',
-      'Location': app.location || '',
-      'Bank Name': app.bankName || '',
-      'Bank Account': app.bankAccount || '',
-      'Assigned To': app.assignedTo || '',
-      'Created At': moment(app.createdAt).format('YYYY-MM-DD HH:mm:ss'),
-      'Completed': app.isCompleted ? 'Yes' : 'No',
-      'Notes': app.notes || '',
-    }));
+  //   // Transform data for export
+  //   const exportData = applications.map(app => ({
+  //     'Application ID': app.loanApplicationId,
+  //     'Full Name': app.fullName,
+  //     'Phone Number': app.phoneNumber,
+  //     'Loan Amount': app.loanAmount,
+  //     'Loan Term': app.loanTerm,
+  //     'Daily Payment': app.dailyPayment,
+  //     'Status': app.status,
+  //     'Identity Number': app.identityNumber || '',
+  //     'Date of Birth': app.dob ? moment(app.dob).format('YYYY-MM-DD') : '',
+  //     'Gender': app.gender || '',
+  //     'Location': app.location || '',
+  //     'Bank Name': app.bankName || '',
+  //     'Bank Account': app.bankAccount || '',
+  //     'Assigned To': app.assignedTo || '',
+  //     'Created At': moment(app.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+  //     'Completed': app.isCompleted ? 'Yes' : 'No',
+  //     'Notes': app.notes || '',
+  //   }));
 
-    return {
-      format: dto.format,
-      data: exportData,
-      count: exportData.length,
-    };
-  }
+  //   return {
+  //     format: dto.format,
+  //     data: exportData,
+  //     count: exportData.length,
+  //   };
+  // }
 
   async getApplicationHistory(id: string) {
     // Try to find by MongoDB ID first, then by loan application ID

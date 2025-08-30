@@ -20,13 +20,15 @@ import {
   Check,
   CheckCheck,
   FileText,
-  Clock
+  Clock,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 export const AdminHeader = () => {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, soundEnabled, toggleSound } = useNotifications();
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const handleLogout = () => {
@@ -113,17 +115,34 @@ export const AdminHeader = () => {
             <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
               <DropdownMenuLabel className="flex items-center justify-between">
                 <span>Thông báo</span>
-                {unreadCount > 0 && (
+                <div className="flex items-center space-x-2">
+                  {/* Sound Toggle */}
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => markAllAsRead()}
+                    onClick={toggleSound}
                     className="h-6 px-2 text-xs"
+                    title={soundEnabled ? "Tắt âm thanh thông báo" : "Bật âm thanh thông báo"}
                   >
-                    <CheckCheck className="w-3 h-3 mr-1" />
-                    Đọc tất cả
+                    {soundEnabled ? (
+                      <Volume2 className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <VolumeX className="w-3 h-3 text-gray-400" />
+                    )}
                   </Button>
-                )}
+                  
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => markAllAsRead()}
+                      className="h-6 px-2 text-xs"
+                    >
+                      <CheckCheck className="w-3 h-3 mr-1" />
+                      Đọc tất cả
+                    </Button>
+                  )}
+                </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               
