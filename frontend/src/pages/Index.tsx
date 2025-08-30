@@ -53,7 +53,7 @@ const Index = () => {
             />
           </div>
           <p className="text-muted-foreground text-sm">
-            © 2024 ALO 15S - Nền tảng cho vay online uy tín, nhanh chóng, minh bạch
+            © 15S - Nền tảng cho vay online uy tín, nhanh chóng, minh bạch
           </p>
           <p className="text-muted-foreground text-xs mt-2">
             Hotline: 0815.320.648 - 0927.996.903

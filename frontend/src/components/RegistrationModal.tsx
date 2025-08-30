@@ -494,12 +494,10 @@ export const RegistrationModal = ({ isOpen, onClose }: RegistrationModalProps) =
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-0">
         <DialogHeader>
           <div className="text-center mb-4">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">A15</span>
-              </div>
-              <span className="text-xl font-bold text-primary">ALO 15S</span>
-            </div>
+            <h1 className="text-3xl font-bold">
+              <span className="text-red-500">15</span>
+              <span className="text-green-700">S</span>
+            </h1>
           </div>
           {renderProgressBar()}
         </DialogHeader>
